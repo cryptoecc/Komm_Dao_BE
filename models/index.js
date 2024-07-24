@@ -1,51 +1,47 @@
+const fs = require("fs");
+const path = require("path");
 const { Sequelize, DataTypes } = require("sequelize");
+
+// 환경 설정 파일의 경로를 설정합니다.
 const env = process.env.NODE_ENV || "development";
-// const Test = require("../models/USER_INFO");
+const configPath = path.resolve(__dirname, "../config/config.local.json"); // config.local.json을 정확히 지정
 
-const configPath =
-  env === "production" ? "config.production.json" : "config.local.json";
-
-const config = require(`../config/${configPath}`);
+// 설정 파일을 읽어옵니다.
+const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
 const db = {};
 
-const sequelize = new Sequelize(
-  config.database || process.env.database,
-  config.user || process.env.user,
-  config.password || process.env.password,
-  {
-    host: config.host || process.env.host,
-    dialect: "mysql",
-  }
-);
+const sequelize = new Sequelize(config.database, config.user, config.password, {
+  host: config.host,
+  dialect: config.dialect,
+  port: config.port, // 포트 설정 추가
+});
 
-// const Info = Test(sequelize);
+// 모델 정의 및 불러오기
+fs.readdirSync(__dirname)
+  .filter((file) => {
+    return (
+      file.indexOf(".") !== 0 &&
+      file !== path.basename(__filename) &&
+      file.slice(-3) === ".js"
+    );
+  })
+  .forEach((file) => {
+    const model = require(path.join(__dirname, file))(sequelize, DataTypes);
+    db[model.name] = model;
+  });
+
+// 모델 간의 관계 설정
+Object.keys(db).forEach((modelName) => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
 
 const UserInfo = require("./USER_INFO")(sequelize, DataTypes);
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 db.UserInfo = UserInfo;
-
-// sequelize
-//   .sync({ force: false })
-//   .then(() => {
-//     console.log("Table created!");
-//   })
-//   .catch((error) => {
-//     console.error("Failed to create table:", error);
-//   });
-
-// sequelize
-//   .authenticate()
-//   .then(() => {
-//     console.log("데이터베이스 연결 성공.");
-//   })
-//   .catch((err) => {
-//     console.error("데이터베이스 연결 실패:", err);
-//   });
-
-// db.sequelize = sequelize;
-// db.Sequelize = Sequelize;
 
 module.exports = db;
