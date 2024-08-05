@@ -15,6 +15,7 @@ const sequelize = new Sequelize(config.database, config.user, config.password, {
   host: config.host,
   dialect: config.dialect,
   port: config.port, // 포트 설정 추가
+  timezone: "+09:00",
 });
 
 // 모델 정의 및 불러오기
@@ -39,9 +40,11 @@ Object.keys(db).forEach((modelName) => {
 });
 
 const UserInfo = require("./USER_INFO")(sequelize, DataTypes);
+const EmailLog = require("./USER_EMAIL_LOG")(sequelize, DataTypes);
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 db.UserInfo = UserInfo;
+db.EmailLog = EmailLog;
 
 module.exports = db;

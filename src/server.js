@@ -3,7 +3,8 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const router = require("./routes");
-const { sequelize, UserInfo } = require("../models");
+const { sequelize, UserInfo, EmailLog } = require("../models");
+require("dotenv").config();
 
 // const corsOptions = {
 //   origin: ["*"],
@@ -18,15 +19,22 @@ app.use(cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
 
+app.use("/uploads", express.static("src/assets/uploads"));
+
 app.use(router);
 
 const port = 4000;
+const syncDB = process.env.SYNC_DB === "true";
 
 sequelize
   .authenticate()
   .then(() => {
     console.log("Database connected...");
-    return sequelize.sync();
+    if (syncDB) {
+      return sequelize.sync({ alter: true }); // alter: true일 때 디비 동기화, false로 바꾸면 동기화x
+    } else {
+      return Promise.resolve();
+    }
   })
   .then(() => {
     app.listen(port, () => {
