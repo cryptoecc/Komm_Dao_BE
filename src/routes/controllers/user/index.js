@@ -1,6 +1,7 @@
 const express = require("express");
 const userController = require("./user.controller");
 const upload = require("../../../utils/multer");
+const profileRouter = require("./profile");
 
 const router = express.Router();
 
@@ -14,6 +15,6 @@ router.post(
   },
   userController.submit
 );
-// router.post("/check-wallet", walletController.checkWallet);
+router.use("/profile", profileRouter);
 
 module.exports = router;
