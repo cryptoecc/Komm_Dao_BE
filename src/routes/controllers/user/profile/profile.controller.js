@@ -12,7 +12,6 @@ const getProfile = async (req, res) => {
     const user = await UserInfo.findOne({
       where: { wallet_addr: walletAddress },
     });
-
     if (!user) {
       console.log("User not found");
       return res.status(404).json({ message: "User not found" });
