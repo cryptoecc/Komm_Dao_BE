@@ -14,7 +14,16 @@ exports.userList = async (req, res) => {
 
 exports.memberList = async (req, res) => {
   try {
-    const members = await UserInfo.findAll({ where: { activate_yn: "Y" } });
+    const members = await UserInfo.findAll({
+      where: { activate_yn: "Y" },
+      include: [
+        {
+          model: KommitteeInfo, // KOMMITTEE_INFO 모델과의 연관
+          as: "kommittees", // USER_INFO 모델에서 정의한 별칭
+          attributes: ["komm_name"], // 가져올 속성
+        },
+      ],
+    });
     res.json(members);
   } catch (error) {
     console.error("Error fetching members", error);
