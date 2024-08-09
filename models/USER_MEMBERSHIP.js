@@ -10,17 +10,28 @@ module.exports = (sequelize) => {
         allowNull: false,
         primaryKey: true,
       },
-      ipfs_cid: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-        unique: true,
-      },
-      image: {
+      image_url: {
         type: DataTypes.STRING(255),
         allowNull: false,
       },
       animation_url: {
         type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      image_ipfs_cid: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      animation_ipfs_cid: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      name: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.STRING(355),
         allowNull: false,
       },
       user_id: {
@@ -33,7 +44,7 @@ module.exports = (sequelize) => {
       },
       created_at: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
         defaultValue: DataTypes.NOW,
       },
     },
