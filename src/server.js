@@ -12,6 +12,20 @@ require("dotenv").config();
 //   // credentials: true,
 // };
 
+// const bcrypt = require("bcrypt");
+
+// const generateHashedPassword = async (password) => {
+//   try {
+//     const hashedPassword = await bcrypt.hash(password, 10);
+//     console.log("Hashed password:", hashedPassword);
+//   } catch (error) {
+//     console.error("Error hashing password:", error);
+//   }
+// };
+
+// // 예시 비밀번호로 해시 생성
+// generateHashedPassword("dao1541");
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  return sequelize.define(
+  const UserInfo = sequelize.define(
     "USER_INFO",
     {
       user_id: {
@@ -90,4 +90,13 @@ module.exports = (sequelize) => {
       ],
     }
   );
+
+  UserInfo.associate = function (models) {
+    UserInfo.hasMany(models.KOMMITTEE_INFO, {
+      foreignKey: "user_id",
+      as: "kommittees",
+    });
+  };
+
+  return UserInfo;
 };
