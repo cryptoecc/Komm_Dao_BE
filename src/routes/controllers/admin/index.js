@@ -12,4 +12,7 @@ router.get("/member-list", adminUserController.memberList);
 router.post("/update-status", adminUserController.updateStatus);
 router.get("/kommittee-list", adminUserController.kommitteeList);
 
+router.get("/add-kommittee", adminUserController.addkommittee);
+router.post("/create-kommittee", adminUserController.createCommittee);
+
 module.exports = router;
