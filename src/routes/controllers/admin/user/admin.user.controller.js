@@ -146,27 +146,37 @@ exports.createCommittee = async (req, res) => {
       program_members,
     } = req.body;
 
-    // // 1. 커미티 정보 저장
-    // const newKommittee = await KommitteeInfo.create({
-    //   komm_name: committee_name,
-    //   start_date: start_date,
-    //   end_date: end_date,
-    //   create_date: new Date(),
-    //   update_date: Date.now(),
-    // });
+    console.log("Treasury Members:", treasury_members);
+    console.log("Governance Members:", governance_members);
+    console.log("Program Members:", program_members);
 
-    // 2. 각 커미티 멤버들 저장
+    // 중복 체크 및 저장 로직
     const saveMembers = async (members, committeeName) => {
       for (const member of members) {
-        await KommitteeInfo.create({
-          komm_name: committeeName,
-          user_id: member,
-          komm_ver: committee_name,
-          start_date: start_date,
-          end_date: end_date,
-          create_date: new Date(),
-          update_date: Date.now(),
+        if (!member) {
+          console.error(`Missing member data for committee ${committeeName}`);
+          continue; // `member`가 비어있는 경우 해당 멤버를 건너뜁니다.
+        }
+
+        const exists = await KommitteeInfo.findOne({
+          where: {
+            user_id: member,
+            komm_name: committeeName,
+            komm_ver: committee_name,
+          },
         });
+
+        if (!exists) {
+          await KommitteeInfo.create({
+            komm_name: committeeName,
+            user_id: member,
+            komm_ver: committee_name,
+            start_date: start_date,
+            end_date: end_date,
+            create_date: new Date(),
+            update_date: Date.now(),
+          });
+        }
       }
     };
 

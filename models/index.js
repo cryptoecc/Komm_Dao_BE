@@ -1,22 +1,42 @@
 const fs = require("fs");
 const path = require("path");
 const { Sequelize, DataTypes } = require("sequelize");
+const dotenv = require("dotenv");
+
+const envFile = `.env.${process.env.NODE_ENV || "development"}`;
+dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 // 환경 설정 파일의 경로를 설정합니다.
 const env = process.env.NODE_ENV || "development";
 const configPath = path.resolve(__dirname, "../config/config.local.json"); // config.local.json을 정확히 지정
 
 // 설정 파일을 읽어옵니다.
-const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+// const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
 const db = {};
 
-const sequelize = new Sequelize(config.database, config.user, config.password, {
-  host: config.host,
-  dialect: config.dialect,
-  port: config.port, // 포트 설정 추가
-  timezone: "+09:00",
-});
+const dbConfig = {
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST,
+  dialect: process.env.DB_DIALECT,
+  port: process.env.DB_PORT || 3306, // 포트가 설정되지 않은 경우 기본값 3306 사용
+};
+
+console.log(dbConfig);
+
+const sequelize = new Sequelize(
+  dbConfig.database,
+  dbConfig.user,
+  dbConfig.password,
+  {
+    host: dbConfig.host,
+    dialect: "mysql",
+    port: dbConfig.port, // 포트 설정 추가
+    timezone: "+09:00",
+  }
+);
 
 // 모델 정의 및 불러오기
 fs.readdirSync(__dirname)

@@ -4,7 +4,12 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const router = require("./routes");
 const { sequelize, UserInfo, EmailLog } = require("../models");
-require("dotenv").config();
+const path = require("path");
+const dotenv = require("dotenv");
+
+// NODE_ENV에 따라 적절한 .env 파일을 로드합니다.
+const envFile = `.env.${process.env.NODE_ENV || "development"}`;
+dotenv.config({ path: path.resolve(__dirname, envFile) });
 
 // const corsOptions = {
 //   origin: ["*"],
