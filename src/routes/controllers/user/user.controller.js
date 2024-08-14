@@ -126,10 +126,9 @@ exports.submit = async (req, res) => {
   console.log("Request File:", req.file);
 
   try {
-    // 업로드된 이미지 파일 경로
-    const uploadedUserImageLink = req.file ? req.file.path : "";
-
-    console.log("ㅁㄴㅇ", uploadedUserImageLink); // 업로드된 파일 경로 로그 확인
+    const uploadedUserImageLink = req.file
+      ? `uploads/${req.file.filename}`
+      : `uploads/profile_default.png`;
 
     // 데이터베이스에 사용자 데이터 저장
     await UserInfo.create({
@@ -144,14 +143,16 @@ exports.submit = async (req, res) => {
       cur_xp,
       last_login_date: null,
       nft_link,
-      user_image_link: uploadedUserImageLink, // 업로드된 이미지 파일 경로 저장
+      user_image_link: uploadedUserImageLink, // 업로드된 이미지 또는 디폴트 이미지 경로 저장
       voting_power,
       activate_yn,
     });
 
+    // 응답을 한 번만 보내도록 수정
     res
       .status(200)
       .send({ success: true, message: "Data submitted successfully." });
+    // 업로드된 이미지 파일 경로
   } catch (error) {
     console.error("Error submitting data:", error);
     res.status(500).send({ success: false, message: "Failed to submit data." });
