@@ -56,7 +56,10 @@ const UserInfo = require("./USER_INFO")(sequelize, DataTypes);
 const EmailLog = require("./USER_EMAIL_LOG")(sequelize, DataTypes);
 const AdminUser = require("./ADMIN_USER")(sequelize, DataTypes);
 const KommitteeInfo = require("./KOMMITTEE_INFO")(sequelize, DataTypes);
+const KohortInfo = require("./KOHORT_INFO")(sequelize, DataTypes);
+const KohortMember = require("./KOHORT_MEMBERS")(sequelize, DataTypes);
 const Contracts = require("./CONTRACTS")(sequelize, DataTypes);
+
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
@@ -64,7 +67,10 @@ db.UserInfo = UserInfo;
 db.EmailLog = EmailLog;
 db.AdminUser = AdminUser;
 db.KommitteeInfo = KommitteeInfo;
+db.KohortInfo = KohortInfo;
+db.KohortMember = KohortMember;
 db.Contracts = Contracts;
+
 
 // 모델 간의 관계 설정
 Object.keys(db).forEach((modelName) => {

@@ -96,6 +96,23 @@ module.exports = (sequelize) => {
       foreignKey: "user_id",
       as: "kommittees",
     });
+
+    UserInfo.hasMany(models.KOHORT_INFO, {
+      foreignKey: "leader_user_id",
+      as: "ledKohorts",
+    });
+
+    UserInfo.belongsToMany(models.KOHORT_INFO, {
+      through: models.KOHORT_MEMBERS,
+      foreignKey: "user_id",
+      otherKey: "kohort_id",
+      as: "kohorts",
+    });
+
+    UserInfo.hasOne(models.ADMIN_USER, {
+      foreignKey: "user_id",
+      as: "admin", // 관계의 별칭
+    });
   };
 
   return UserInfo;

@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  return sequelize.define(
+  const AdminUser = sequelize.define(
     "ADMIN_USER",
     {
       admin_id: {
@@ -9,6 +9,17 @@ module.exports = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
+      },
+      user_id: {
+        // USER_INFO의 user_id를 참조하는 외래 키
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "USER_INFO", // 참조할 테이블 이름
+          key: "user_id", // 참조할 칼럼
+        },
+        onDelete: "CASCADE", // 사용자 삭제 시 ADMIN_USER 레코드도 삭제
+        onUpdate: "CASCADE", // USER_INFO의 user_id가 업데이트되면 ADMIN_USER의 user_id도 업데이트
       },
       email: {
         type: DataTypes.STRING(255),
@@ -44,4 +55,12 @@ module.exports = (sequelize) => {
       ],
     }
   );
+  AdminUser.associate = function (models) {
+    AdminUser.belongsTo(models.USER_INFO, {
+      foreignKey: "user_id",
+      as: "user", // 관계의 별칭
+    });
+  };
+
+  return AdminUser;
 };
