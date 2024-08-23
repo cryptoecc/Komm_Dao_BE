@@ -1,6 +1,7 @@
 const express = require("express");
 const adminController = require("./admin.controller");
 const adminUserController = require("./user/admin.user.controller");
+const adminContractController = require("./contract/admin.contract.controller");
 const router = express.Router();
 const { loginAttemptLimit } = require("../../../utils/utils");
 const upload = require("../../../../src/utils/multer");
@@ -38,5 +39,8 @@ router.post("/kohort-status-update", adminUserController.approveKohort);
 
 // Token 검증
 router.post("/verify-token", adminController.verifyToken);
+
+router.get("/contract-list", adminContractController.contractList);
+router.get("/contract-query/:name", adminContractController.queryContract);
 
 module.exports = router;
