@@ -6,8 +6,20 @@ const generateToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
 
-const verifyToken = (token) => {
-  return jwt.verify(token, process.env.JWT_SECRET);
+const verifyToken = (req, res, next) => {
+  const token = req.headers["authorization"];
+
+  if (!token) {
+    return res.status(403).json({ message: "No token provided." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // 사용자 정보를 req.user에 추가
+    next(); // 다음 미들웨어 또는 라우트 핸들러로 이동
+  } catch (error) {
+    return res.status(401).json({ message: "Unauthorized: Invalid token." });
+  }
 };
 
 const generatePin = () => {
