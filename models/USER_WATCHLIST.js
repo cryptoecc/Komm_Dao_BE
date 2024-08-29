@@ -1,42 +1,30 @@
 const Sequelize = require("sequelize");
 module.exports = function (sequelize, DataTypes) {
   return sequelize.define(
-    "USER_DEAL_INTEREST",
+    "USER_WATCHLIST",
     {
-      deal_id: {
-        type: DataTypes.INTEGER,
+      watch_id: {
+        autoIncrement: true,
+        type: DataTypes.INTEGER.UNSIGNED,
         allowNull: false,
         primaryKey: true,
       },
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        primaryKey: true,
+        unique: "user_id_unique",
       },
-      user_interest: {
-        type: DataTypes.DOUBLE,
-        allowNull: false,
-        comment: "update 가능",
-      },
-      user_final_alloc: {
-        type: DataTypes.DOUBLE,
+      pjt_id: {
+        type: DataTypes.INTEGER,
         allowNull: true,
-      },
-      payment_amount: {
-        type: DataTypes.DOUBLE,
-        allowNull: true,
-      },
-      payment_status: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      payment_link: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
+        references: {
+          model: "PROJECT_INFO",
+          key: "pjt_id",
+        },
       },
       create_date: {
         type: DataTypes.DATEONLY,
-        allowNull: true,
+        allowNull: false,
       },
       update_date: {
         type: DataTypes.DATEONLY,
@@ -45,19 +33,25 @@ module.exports = function (sequelize, DataTypes) {
     },
     {
       sequelize,
-      tableName: "USER_DEAL_INTEREST",
+      tableName: "USER_WATCHLIST",
       timestamps: false,
       indexes: [
         {
           name: "PRIMARY",
           unique: true,
           using: "BTREE",
-          fields: [{ name: "deal_id" }, { name: "user_id" }],
+          fields: [{ name: "watch_id" }],
         },
         {
-          name: "idx_user_id",
+          name: "user_id_unique",
+          unique: true,
           using: "BTREE",
           fields: [{ name: "user_id" }],
+        },
+        {
+          name: "watchlist_info_pjt_id_foreign",
+          using: "BTREE",
+          fields: [{ name: "pjt_id" }],
         },
       ],
     }

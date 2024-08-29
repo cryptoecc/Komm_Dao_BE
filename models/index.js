@@ -38,6 +38,10 @@ const sequelize = new Sequelize(
     dialect: "mysql",
     port: dbConfig.port, // 포트 설정 추가
     timezone: "+09:00",
+    logging: (sql) => {
+      console.log(sql);
+      fs.appendFileSync(path.join(__dirname, "schema.sql"), `${sql};\n`);
+    },
   }
 );
 
@@ -63,6 +67,7 @@ const KohortInfo = require("./KOHORT_INFO")(sequelize, DataTypes);
 const KohortMember = require("./KOHORT_MEMBERS")(sequelize, DataTypes);
 const Contracts = require("./CONTRACTS")(sequelize, DataTypes);
 const ProjectInfo = require("./PROJECT_INFO")(sequelize, DataTypes);
+
 
 db.ProjectInfo = ProjectInfo;
 db.sequelize = sequelize;

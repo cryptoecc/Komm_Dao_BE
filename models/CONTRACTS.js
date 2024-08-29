@@ -18,31 +18,31 @@ module.exports = (sequelize) => {
       name: {
         type: DataTypes.STRING(255),
         allowNull: false,
-        unique: false,
+        unique: false, // GOvernance (delegate, proposal ), Membership 
       },
       address: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: false, // contract address 
       },
       deployer: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: false, // 처음 컨트랙트를 배포한 사람
       },
       owner: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: false, // owner => admin
       },
       network_name: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: false, // Optimism
       },
       network_url: {
         type: DataTypes.STRING(355),
-        allowNull: false,
+        allowNull: false, // Optimism url
       },
       active: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: false, // Running, Stop 
       },
     },
     {

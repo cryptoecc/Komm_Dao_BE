@@ -31,7 +31,19 @@ module.exports = function (sequelize, DataTypes) {
         comment:
           "COMM_CODE = DEAL_ROUND DEAL_PRESEED DEAL_SEED DEAL_PRIVATE DEAL_ST DEAL_S_A DEAL_S_B DEAL_S_C",
       },
-      deal_image_url: {
+      deal_logo: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      deal_background: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      min_interest: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      max_interest: {
         type: DataTypes.STRING(255),
         allowNull: false,
       },
@@ -48,16 +60,20 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
         comment: "comm_code = deal_status RAISING - ADMIN - CLOSED",
       },
-      current_interest: {
-        type: DataTypes.DOUBLE,
-        allowNull: false,
-      },
       total_interest: {
-        type: DataTypes.DOUBLE,
+        type: DataTypes.FLOAT(53),
         allowNull: false,
       },
-      final_amount: {
-        type: DataTypes.DOUBLE,
+      final_cap: {
+        type: DataTypes.FLOAT(53),
+        allowNull: false,
+      },
+      total_cur_paid: {
+        type: DataTypes.FLOAT(53),
+        allowNull: false,
+      },
+      payment_due_date: {
+        type: DataTypes.DATEONLY,
         allowNull: false,
       },
       start_date: {

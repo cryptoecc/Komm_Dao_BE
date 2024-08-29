@@ -93,49 +93,53 @@ module.exports = function (sequelize, DataTypes) {
         defaultValue: "0",
       },
       pjt_summary: {
-        type: DataTypes.STRING(500),
+        type: DataTypes.STRING(255),
         allowNull: false,
-        defaultValue: "", // 기본값을 빈 문자열로 설정
       },
       pjt_details: {
         type: DataTypes.STRING(255),
-        allowNull: false,
-        defaultValue: "", // 기본값을 빈 문자열로 설정
+        allowNull: true,
       },
       adm_trend: {
         type: DataTypes.STRING(255),
-        allowNull: false,
-        defaultValue: "", // 기본값을 빈 문자열로 설정
+        allowNull: true,
       },
       adm_expertise: {
         type: DataTypes.STRING(255),
-        allowNull: false,
-        defaultValue: "", // 기본값을 빈 문자열로 설정
+        allowNull: true,
       },
       adm_final_grade: {
         type: DataTypes.STRING(255),
-        allowNull: false,
-        defaultValue: "", // 기본값을 빈 문자열로 설정
+        allowNull: true,
       },
       update_date: {
         type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.NOW,
+        allowNull: true,
+        defaultValue: Sequelize.Sequelize.literal("CURRENT_TIMESTAMP"),
       },
       update_yn: {
         type: DataTypes.STRING(255),
-        allowNull: false,
-        defaultValue: "N", // 기본값을 "N"으로 설정
+        allowNull: true,
       },
       apply_date: {
         type: DataTypes.DATEONLY,
-        allowNull: false,
-        defaultValue: Sequelize.NOW, // 현재 날짜를 기본값으로 설정
+        allowNull: true,
       },
       apply_yn: {
         type: DataTypes.STRING(255),
         allowNull: false,
-        defaultValue: "N", // 기본값을 "N"으로 설정
+      },
+      total_rating: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      total_per: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      create_date: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
       },
     },
     {
@@ -152,7 +156,6 @@ module.exports = function (sequelize, DataTypes) {
       ],
     }
   );
-
   // 테이블 동기화 후 AUTO_INCREMENT를 1로 리셋하는 후크 추가
   ProjectInfo.afterSync(async () => {
     await sequelize.query("ALTER TABLE PROJECT_INFO AUTO_INCREMENT = 1");

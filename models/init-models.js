@@ -13,7 +13,7 @@ var _USER_DEAL_INTEREST = require("./USER_DEAL_INTEREST");
 var _USER_INFO = require("./USER_INFO");
 var _USER_PROPOSAL = require("./USER_PROPOSAL");
 var _USER_RATING = require("./USER_RATING");
-var _WATCHLIST_INFO = require("./WATCHLIST_INFO");
+var _USER_WATCHLIST = require("./USER_WATCHLIST");
 
 function initModels(sequelize) {
   var COMMON = _COMMON(sequelize, DataTypes);
@@ -30,44 +30,125 @@ function initModels(sequelize) {
   var USER_INFO = _USER_INFO(sequelize, DataTypes);
   var USER_PROPOSAL = _USER_PROPOSAL(sequelize, DataTypes);
   var USER_RATING = _USER_RATING(sequelize, DataTypes);
-  var WATCHLIST_INFO = _WATCHLIST_INFO(sequelize, DataTypes);
+  var USER_WATCHLIST = _USER_WATCHLIST(sequelize, DataTypes);
 
-  USER_CONTRIBUTION.belongsTo(CONTRIBUTION_INFO, { as: "cont", foreignKey: "cont_id"});
-  CONTRIBUTION_INFO.hasOne(USER_CONTRIBUTION, { as: "USER_CONTRIBUTION", foreignKey: "cont_id"});
-  KOHORT_INFO.belongsTo(KOHORT_MEMBERS, { as: "kohort", foreignKey: "kohort_id"});
-  KOHORT_MEMBERS.hasOne(KOHORT_INFO, { as: "KOHORT_INFO", foreignKey: "kohort_id"});
-  CONTRIBUTION_INFO.belongsTo(PROJECT_INFO, { as: "pjt", foreignKey: "pjt_id"});
-  PROJECT_INFO.hasMany(CONTRIBUTION_INFO, { as: "CONTRIBUTION_INFOs", foreignKey: "pjt_id"});
-  DEAL_INFO.belongsTo(PROJECT_INFO, { as: "pjt", foreignKey: "pjt_id"});
-  PROJECT_INFO.hasMany(DEAL_INFO, { as: "DEAL_INFOs", foreignKey: "pjt_id"});
-  WATCHLIST_INFO.belongsTo(PROJECT_INFO, { as: "pjt", foreignKey: "pjt_id"});
-  PROJECT_INFO.hasMany(WATCHLIST_INFO, { as: "WATCHLIST_INFOs", foreignKey: "pjt_id"});
-  CONTRIBUTION_INFO.belongsTo(USER_CONTRIBUTION, { as: "ms_1", foreignKey: "ms_1_id"});
-  USER_CONTRIBUTION.hasMany(CONTRIBUTION_INFO, { as: "CONTRIBUTION_INFOs", foreignKey: "ms_1_id"});
-  CONTRIBUTION_INFO.belongsTo(USER_CONTRIBUTION, { as: "ms_2", foreignKey: "ms_2_id"});
-  USER_CONTRIBUTION.hasMany(CONTRIBUTION_INFO, { as: "ms_2_CONTRIBUTION_INFOs", foreignKey: "ms_2_id"});
-  CONTRIBUTION_INFO.belongsTo(USER_CONTRIBUTION, { as: "ms_3", foreignKey: "ms_3_id"});
-  USER_CONTRIBUTION.hasMany(CONTRIBUTION_INFO, { as: "ms_3_CONTRIBUTION_INFOs", foreignKey: "ms_3_id"});
-  DEAL_INFO.belongsTo(USER_DEAL_INTEREST, { as: "deal", foreignKey: "deal_id"});
-  USER_DEAL_INTEREST.hasOne(DEAL_INFO, { as: "DEAL_INFO", foreignKey: "deal_id"});
-  DELEGATE_INFO.belongsTo(USER_INFO, { as: "delegate_from_USER_INFO", foreignKey: "delegate_from"});
-  USER_INFO.hasMany(DELEGATE_INFO, { as: "DELEGATE_INFOs", foreignKey: "delegate_from"});
-  DELEGATE_INFO.belongsTo(USER_INFO, { as: "delegate_to_USER_INFO", foreignKey: "delegate_to"});
-  USER_INFO.hasMany(DELEGATE_INFO, { as: "delegate_to_DELEGATE_INFOs", foreignKey: "delegate_to"});
-  KOHORT_INFO.belongsTo(USER_INFO, { as: "leader_user", foreignKey: "leader_user_id"});
-  USER_INFO.hasMany(KOHORT_INFO, { as: "KOHORT_INFOs", foreignKey: "leader_user_id"});
-  KOMMITTEE_INFO.belongsTo(USER_INFO, { as: "user", foreignKey: "user_id"});
-  USER_INFO.hasMany(KOMMITTEE_INFO, { as: "KOMMITTEE_INFOs", foreignKey: "user_id"});
-  PROPOSAL_INFO.belongsTo(USER_INFO, { as: "create_user", foreignKey: "create_user_id"});
-  USER_INFO.hasMany(PROPOSAL_INFO, { as: "PROPOSAL_INFOs", foreignKey: "create_user_id"});
-  USER_CONTRIBUTION.belongsTo(USER_INFO, { as: "user", foreignKey: "user_id"});
-  USER_INFO.hasOne(USER_CONTRIBUTION, { as: "USER_CONTRIBUTION", foreignKey: "user_id"});
-  PROPOSAL_INFO.belongsTo(USER_PROPOSAL, { as: "prop", foreignKey: "prop_id"});
-  USER_PROPOSAL.hasOne(PROPOSAL_INFO, { as: "PROPOSAL_INFO", foreignKey: "prop_id"});
-  USER_INFO.belongsTo(USER_PROPOSAL, { as: "user", foreignKey: "user_id"});
-  USER_PROPOSAL.hasOne(USER_INFO, { as: "USER_INFO", foreignKey: "user_id"});
-  PROJECT_INFO.belongsTo(USER_RATING, { as: "pjt", foreignKey: "pjt_id"});
-  USER_RATING.hasOne(PROJECT_INFO, { as: "PROJECT_INFO", foreignKey: "pjt_id"});
+  USER_CONTRIBUTION.belongsTo(CONTRIBUTION_INFO, {
+    as: "cont",
+    foreignKey: "cont_id",
+  });
+  CONTRIBUTION_INFO.hasOne(USER_CONTRIBUTION, {
+    as: "USER_CONTRIBUTION",
+    foreignKey: "cont_id",
+  });
+  KOHORT_INFO.belongsTo(KOHORT_MEMBERS, {
+    as: "kohort",
+    foreignKey: "kohort_id",
+  });
+  KOHORT_MEMBERS.hasOne(KOHORT_INFO, {
+    as: "KOHORT_INFO",
+    foreignKey: "kohort_id",
+  });
+  CONTRIBUTION_INFO.belongsTo(PROJECT_INFO, {
+    as: "pjt",
+    foreignKey: "pjt_id",
+  });
+  PROJECT_INFO.hasMany(CONTRIBUTION_INFO, {
+    as: "CONTRIBUTION_INFOs",
+    foreignKey: "pjt_id",
+  });
+  DEAL_INFO.belongsTo(PROJECT_INFO, { as: "pjt", foreignKey: "pjt_id" });
+  PROJECT_INFO.hasMany(DEAL_INFO, { as: "DEAL_INFOs", foreignKey: "pjt_id" });
+  USER_WATCHLIST.belongsTo(PROJECT_INFO, { as: "pjt", foreignKey: "pjt_id" });
+  PROJECT_INFO.hasMany(USER_WATCHLIST, {
+    as: "USER_WATCHLIST",
+    foreignKey: "pjt_id",
+  });
+  CONTRIBUTION_INFO.belongsTo(USER_CONTRIBUTION, {
+    as: "ms_1",
+    foreignKey: "ms_1_id",
+  });
+  USER_CONTRIBUTION.hasMany(CONTRIBUTION_INFO, {
+    as: "CONTRIBUTION_INFOs",
+    foreignKey: "ms_1_id",
+  });
+  CONTRIBUTION_INFO.belongsTo(USER_CONTRIBUTION, {
+    as: "ms_2",
+    foreignKey: "ms_2_id",
+  });
+  USER_CONTRIBUTION.hasMany(CONTRIBUTION_INFO, {
+    as: "ms_2_CONTRIBUTION_INFOs",
+    foreignKey: "ms_2_id",
+  });
+  CONTRIBUTION_INFO.belongsTo(USER_CONTRIBUTION, {
+    as: "ms_3",
+    foreignKey: "ms_3_id",
+  });
+  USER_CONTRIBUTION.hasMany(CONTRIBUTION_INFO, {
+    as: "ms_3_CONTRIBUTION_INFOs",
+    foreignKey: "ms_3_id",
+  });
+  DEAL_INFO.belongsTo(USER_DEAL_INTEREST, {
+    as: "deal",
+    foreignKey: "deal_id",
+  });
+  USER_DEAL_INTEREST.hasOne(DEAL_INFO, {
+    as: "DEAL_INFO",
+    foreignKey: "deal_id",
+  });
+  DELEGATE_INFO.belongsTo(USER_INFO, {
+    as: "delegate_from_USER_INFO",
+    foreignKey: "delegate_from",
+  });
+  USER_INFO.hasMany(DELEGATE_INFO, {
+    as: "DELEGATE_INFOs",
+    foreignKey: "delegate_from",
+  });
+  DELEGATE_INFO.belongsTo(USER_INFO, {
+    as: "delegate_to_USER_INFO",
+    foreignKey: "delegate_to",
+  });
+  USER_INFO.hasMany(DELEGATE_INFO, {
+    as: "delegate_to_DELEGATE_INFOs",
+    foreignKey: "delegate_to",
+  });
+  KOHORT_INFO.belongsTo(USER_INFO, {
+    as: "leader_user",
+    foreignKey: "leader_user_id",
+  });
+  USER_INFO.hasMany(KOHORT_INFO, {
+    as: "KOHORT_INFOs",
+    foreignKey: "leader_user_id",
+  });
+  KOMMITTEE_INFO.belongsTo(USER_INFO, { as: "user", foreignKey: "user_id" });
+  USER_INFO.hasMany(KOMMITTEE_INFO, {
+    as: "KOMMITTEE_INFOs",
+    foreignKey: "user_id",
+  });
+  PROPOSAL_INFO.belongsTo(USER_INFO, {
+    as: "create_user",
+    foreignKey: "create_user_id",
+  });
+  USER_INFO.hasMany(PROPOSAL_INFO, {
+    as: "PROPOSAL_INFOs",
+    foreignKey: "create_user_id",
+  });
+  USER_CONTRIBUTION.belongsTo(USER_INFO, { as: "user", foreignKey: "user_id" });
+  USER_INFO.hasOne(USER_CONTRIBUTION, {
+    as: "USER_CONTRIBUTION",
+    foreignKey: "user_id",
+  });
+  PROPOSAL_INFO.belongsTo(USER_PROPOSAL, { as: "prop", foreignKey: "prop_id" });
+  USER_PROPOSAL.hasOne(PROPOSAL_INFO, {
+    as: "PROPOSAL_INFO",
+    foreignKey: "prop_id",
+  });
+  USER_INFO.belongsTo(USER_PROPOSAL, { as: "user", foreignKey: "user_id" });
+  USER_PROPOSAL.hasOne(USER_INFO, { as: "USER_INFO", foreignKey: "user_id" });
+  PROJECT_INFO.belongsTo(USER_RATING, { as: "pjt", foreignKey: "pjt_id" });
+  USER_RATING.hasOne(PROJECT_INFO, {
+    as: "PROJECT_INFO",
+    foreignKey: "pjt_id",
+  });
 
   return {
     COMMON,
@@ -84,7 +165,7 @@ function initModels(sequelize) {
     USER_INFO,
     USER_PROPOSAL,
     USER_RATING,
-    WATCHLIST_INFO,
+    USER_WATCHLIST,
   };
 }
 module.exports = initModels;
