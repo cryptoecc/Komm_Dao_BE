@@ -93,7 +93,7 @@ module.exports = function (sequelize, DataTypes) {
         defaultValue: "0",
       },
       pjt_summary: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.STRING(500),
         allowNull: false,
       },
       pjt_details: {
