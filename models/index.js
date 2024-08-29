@@ -3,8 +3,11 @@ const path = require("path");
 const { Sequelize, DataTypes } = require("sequelize");
 const dotenv = require("dotenv");
 
+// const envFile = `.env.${process.env.NODE_ENV || "development"}`;
+// dotenv.config({ path: path.resolve(process.cwd(), envFile) });
+
 const envFile = `.env.${process.env.NODE_ENV || "development"}`;
-dotenv.config({ path: path.resolve(process.cwd(), envFile) });
+dotenv.config({ path: path.resolve(__dirname, "..", envFile) });
 
 // 환경 설정 파일의 경로를 설정합니다.
 const env = process.env.NODE_ENV || "development";
@@ -65,6 +68,8 @@ const KohortMember = require("./KOHORT_MEMBERS")(sequelize, DataTypes);
 const Contracts = require("./CONTRACTS")(sequelize, DataTypes);
 const ProjectInfo = require("./PROJECT_INFO")(sequelize, DataTypes);
 
+
+db.ProjectInfo = ProjectInfo;
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 db.UserInfo = UserInfo;
@@ -74,7 +79,6 @@ db.KommitteeInfo = KommitteeInfo;
 db.KohortInfo = KohortInfo;
 db.KohortMember = KohortMember;
 db.Contracts = Contracts;
-db.ProjectInfo = ProjectInfo;
 
 // 모델 간의 관계 설정
 Object.keys(db).forEach((modelName) => {
