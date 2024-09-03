@@ -2,6 +2,9 @@
 /.pnp
 .pnp.js
 
+# Python virtual environment
+myenv/
+
 # testing
 /coverage
 

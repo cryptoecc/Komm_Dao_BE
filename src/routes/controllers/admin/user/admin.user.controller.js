@@ -9,7 +9,12 @@ const { Op } = require("sequelize");
 
 exports.userList = async (req, res) => {
   try {
-    const applicants = await UserInfo.findAll();
+    const applicants = await UserInfo.findAll({
+      order: [
+        ["appr_status", "ASC"], // PENDING 상태가 먼저 오도록 정렬
+        ["reg_date", "DESC"], // 그 다음은 등록 날짜로 정렬 (원하는 다른 정렬 기준을 사용할 수 있음)
+      ],
+    });
     res.json(applicants);
   } catch (error) {
     console.error("Error fetching applicants", error);
