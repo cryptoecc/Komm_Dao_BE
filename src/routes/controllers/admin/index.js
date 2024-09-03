@@ -3,6 +3,7 @@ const adminController = require("./admin.controller");
 const adminUserController = require("./user/admin.user.controller");
 const adminContractController = require("./contract/admin.contract.controller");
 const adminDiscoverController = require("./discover/admin.discover.controller");
+const adminContributionController = require("./contribution/admin.contribution.controller");
 const router = express.Router();
 const { loginAttemptLimit } = require("../../../utils/utils");
 const upload = require("../../../../src/utils/multer");
@@ -45,5 +46,10 @@ router.get("/contract-query/:name", adminContractController.queryContract);
 
 // Discover
 router.get("/project-list", adminDiscoverController.projectList);
+router.post("/apply-project", adminDiscoverController.projectApply);
+router.post("/update-project", adminDiscoverController.projectUpdate);
+
+// Contribution
+router.get("/contribution-list", adminContributionController.contributionList);
 
 module.exports = router;
