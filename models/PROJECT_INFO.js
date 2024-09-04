@@ -138,10 +138,6 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
-      create_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-      },
     },
     {
       sequelize,
