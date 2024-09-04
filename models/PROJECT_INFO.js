@@ -127,7 +127,7 @@ module.exports = function (sequelize, DataTypes) {
       },
       apply_yn: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "N",
       },
       total_rating: {
