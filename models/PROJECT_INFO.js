@@ -26,15 +26,15 @@ module.exports = function (sequelize, DataTypes) {
       },
       website: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
       },
       category: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
       },
       x_link: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "", // 기본값을 빈 문자열로 설정
       },
       x_followers: {
@@ -44,47 +44,47 @@ module.exports = function (sequelize, DataTypes) {
       },
       discord_link: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "", // 기본값을 빈 문자열로 설정
       },
       discord_members: {
         type: DataTypes.DOUBLE,
-        allowNull: false,
+        allowNull: true,
         defaultValue: 0, // 기본값을 0으로 설정
       },
       linkedIn_link: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "", // 기본값을 빈 문자열로 설정
       },
       github_link: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "", // 기본값을 빈 문자열로 설정
       },
       github_stars: {
         type: DataTypes.DOUBLE,
-        allowNull: false,
+        allowNull: true,
         defaultValue: 0, // 기본값을 0으로 설정
       },
       github_wkly_comm: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "", // 기본값을 빈 문자열로 설정
       },
       raising_amount: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "", // 기본값을 빈 문자열로 설정
       },
       valuation: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "", // 기본값을 빈 문자열로 설정
       },
       investors: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "", // 기본값을 빈 문자열로 설정
       },
       pjt_grade: {
@@ -94,7 +94,7 @@ module.exports = function (sequelize, DataTypes) {
       },
       pjt_summary: {
         type: DataTypes.STRING(500),
-        allowNull: false,
+        allowNull: true,
       },
       pjt_details: {
         type: DataTypes.STRING(255),
@@ -137,10 +137,6 @@ module.exports = function (sequelize, DataTypes) {
       total_per: {
         type: DataTypes.INTEGER,
         allowNull: true,
-      },
-      create_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
       },
     },
     {
