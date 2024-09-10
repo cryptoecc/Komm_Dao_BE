@@ -39,7 +39,6 @@ const sequelize = new Sequelize(
     port: dbConfig.port, // 포트 설정 추가
     timezone: "+09:00",
     logging: (sql) => {
-      console.log(sql);
       fs.appendFileSync(path.join(__dirname, "schema.sql"), `${sql};\n`);
     },
   }
@@ -67,7 +66,12 @@ const KohortInfo = require("./KOHORT_INFO")(sequelize, DataTypes);
 const KohortMember = require("./KOHORT_MEMBERS")(sequelize, DataTypes);
 const Contracts = require("./CONTRACTS")(sequelize, DataTypes);
 const ProjectInfo = require("./PROJECT_INFO")(sequelize, DataTypes);
-
+const ContributionInfo = require("./CONTRIBUTION_INFO")(sequelize, DataTypes);
+const ContributionMissions = require("./CONTRIBUTION_MISSIONS")(
+  sequelize,
+  DataTypes
+);
+const DealInfo = require("./DEAL_INFO")(sequelize, DataTypes);
 
 db.ProjectInfo = ProjectInfo;
 db.sequelize = sequelize;
@@ -79,6 +83,9 @@ db.KommitteeInfo = KommitteeInfo;
 db.KohortInfo = KohortInfo;
 db.KohortMember = KohortMember;
 db.Contracts = Contracts;
+db.ContributionInfo = ContributionInfo;
+db.ContributionMissions = ContributionMissions;
+db.DealInfo = DealInfo;
 
 // 모델 간의 관계 설정
 Object.keys(db).forEach((modelName) => {

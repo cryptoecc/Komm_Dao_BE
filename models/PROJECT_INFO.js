@@ -15,10 +15,6 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
-        references: {
-          model: "USER_RATING",
-          key: "pjt_id",
-        },
       },
       pjt_name: {
         type: DataTypes.STRING(255),

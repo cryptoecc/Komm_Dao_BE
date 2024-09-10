@@ -1,5 +1,4 @@
 const { DataTypes } = require("sequelize");
-const KOMMITTEE_INFO = require("./KOMMITTEE_INFO");
 
 module.exports = (sequelize) => {
   const KohortInfo = sequelize.define(
@@ -9,11 +8,7 @@ module.exports = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
-        autoIncrement: true,
-        references: {
-          model: "KOHORT_MEMBERS",
-          key: "kohort_id",
-        },
+        autoIncrement: true, // 외래 키로 참조하지 않음
       },
       kohort_name: {
         type: DataTypes.STRING(255),
