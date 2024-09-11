@@ -2,6 +2,7 @@ const express = require("express");
 const userController = require("./user.controller");
 const upload = require("../../../utils/multer");
 const profileRouter = require("./profile");
+const watchlistRouter = require("./watchlist");
 
 const router = express.Router();
 
@@ -16,5 +17,6 @@ router.post(
   userController.submit
 );
 router.use("/profile", profileRouter);
+router.use("/watchlist", watchlistRouter);
 
 module.exports = router;
