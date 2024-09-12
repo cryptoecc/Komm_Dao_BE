@@ -20,7 +20,6 @@ const getDeals = async (req, res) => {
         deal.total_interest && deal.final_cap
           ? Math.round((deal.total_interest / deal.final_cap) * 100)
           : 0, // 만약 값이 없을 때 0으로 설정
-      start_date: deal.start_date,
       end_date: deal.end_date,
       deal_logo_url: deal.deal_logo || "", // deal_logo 전달
       deal_banner_url: deal.deal_background || "",
@@ -58,7 +57,6 @@ const getDealById = async (req, res) => {
       deal_desc: deal.deal_desc,
       final_amount: deal.final_cap,
       percentage: Math.round((deal.total_interest / deal.final_cap) * 100),
-      start_date: deal.start_date,
       end_date: deal.end_date,
       deal_image_url: deal.deal_logo,
       banner_image_url: deal.deal_background,
