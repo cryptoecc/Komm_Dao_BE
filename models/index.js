@@ -38,9 +38,6 @@ const sequelize = new Sequelize(
     dialect: "mysql",
     port: dbConfig.port, // 포트 설정 추가
     timezone: "+09:00",
-    logging: (sql) => {
-      fs.appendFileSync(path.join(__dirname, "schema.sql"), `${sql};\n`);
-    },
   }
 );
 
