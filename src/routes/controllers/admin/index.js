@@ -72,4 +72,16 @@ router.post(
   adminDealController.createDeal
 );
 
+router.put(
+  "/deals/:dealId",
+  upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 },
+  ]),
+  adminDealController.updateDeal
+);
+
+router.get("/deal-list", adminDealController.dealList);
+router.delete("/deals/:dealId", adminDealController.deleteDeal);
+
 module.exports = router;
