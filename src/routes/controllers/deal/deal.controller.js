@@ -1,4 +1,10 @@
-const { DEAL_INFO } = require("../../../../models"); // Adjust the path if necessary
+const { sequelize } = require("../../../../models"); // Adjust the path if necessary
+
+const {
+  DEAL_INFO,
+  USER_DEAL_INTEREST,
+  USER_INFO,
+} = require("../../../../models"); // Adjust the path if necessary
 
 // Function to get all deals
 const getDeals = async (req, res) => {
@@ -9,22 +15,22 @@ const getDeals = async (req, res) => {
     // Log the raw deals data
     console.log("Raw deals data:", deals);
 
-    // Transform the deals into the desired format, if necessary
+    // Transform the deals into the desired format, including create_date, min_interest, and max_interest
     const transformedDeals = deals.map((deal) => ({
       deal_id: deal.deal_id,
       deal_name: deal.deal_name,
       description: deal.deal_desc,
       summary: deal.deal_summary,
       amount: deal.total_interest || 0, // default 값 추가
-      percentage:
-        deal.total_interest && deal.final_cap
-          ? Math.round((deal.total_interest / deal.final_cap) * 100)
-          : 0, // 만약 값이 없을 때 0으로 설정
       end_date: deal.end_date,
       deal_logo_url: deal.deal_logo || "", // deal_logo 전달
       deal_banner_url: deal.deal_background || "",
       deal_status: deal.deal_status || "PENDING", // deal 상태 전달
       deal_round: deal.deal_round || "N/A", // deal 라운드 전달
+      create_date: deal.create_date || null, // create_date 추가
+      min_interest: deal.min_interest || 0, // min_interest 추가
+      max_interest: deal.max_interest || 0, // max_interest 추가
+      final_amount: deal.final_cap || 0, // final_amount가 null일 경우 0으로 대체
     }));
 
     // Log the transformed deals data
@@ -38,7 +44,7 @@ const getDeals = async (req, res) => {
   }
 };
 
-// 특정 Deal을 ID로 가져오는 API
+// Function to get a specific deal by ID
 const getDealById = async (req, res) => {
   try {
     const dealId = req.params.dealId; // dealId는 요청 URL에서 가져옴
@@ -50,18 +56,21 @@ const getDealById = async (req, res) => {
       return res.status(404).json({ message: "Deal not found" });
     }
 
-    // 응답할 데이터 형태로 변환
+    // 응답할 데이터 형태로 변환, including create_date, min_interest, and max_interest
     const transformedDeal = {
       deal_id: deal.deal_id,
       deal_name: deal.deal_name,
       deal_desc: deal.deal_desc,
-      final_amount: deal.final_cap,
-      percentage: Math.round((deal.total_interest / deal.final_cap) * 100),
+      final_amount: deal.final_cap || 0, // final_amount가 null일 경우 0으로 대체
       end_date: deal.end_date,
       deal_image_url: deal.deal_logo,
       banner_image_url: deal.deal_background,
       deal_status: deal.deal_status,
       deal_round: deal.deal_round,
+      create_date: deal.create_date || null, // create_date 추가
+      min_interest: deal.min_interest || 0, // min_interest 추가
+      max_interest: deal.max_interest || 0, // max_interest 추가
+      total_interest: deal.total_interest || 0, // total_interest 추가
     };
 
     res.json(transformedDeal); // 변환된 데이터를 JSON 형식으로 응답
@@ -71,7 +80,81 @@ const getDealById = async (req, res) => {
   }
 };
 
+// Function to update user interest in a deal
+const updateUserInterest = async (req, res) => {
+  try {
+    const dealId = req.params.dealId;
+    const userId = req.params.userId;
+    const { intAmount } = req.body;
+
+    // Check if the deal and user exist
+    const deal = await DEAL_INFO.findOne({ where: { deal_id: dealId } });
+    const user = await USER_INFO.findOne({ where: { user_id: userId } });
+
+    if (!deal) {
+      return res.status(404).json({ message: "Deal not found" });
+    }
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the interest amount is within the valid range
+    const minInterest = parseFloat(deal.min_interest);
+    const maxInterest = parseFloat(deal.max_interest);
+
+    if (intAmount < minInterest || intAmount > maxInterest) {
+      return res.status(400).json({ message: "Interest amount out of range" });
+    }
+
+    // Calculate the new total interest for the deal
+    const [userInterestRecord, created] = await USER_DEAL_INTEREST.findOrCreate(
+      {
+        where: {
+          deal_id: dealId,
+          user_id: userId,
+        },
+        defaults: {
+          user_interest: intAmount,
+          create_date: new Date().toISOString().split("T")[0], // create_date를 현재 날짜로 설정
+          update_date: new Date().toISOString().split("T")[0], // update_date를 현재 날짜로 설정
+        },
+      }
+    );
+
+    if (!created) {
+      // If the record already exists, update the user_interest and the dates
+      await USER_DEAL_INTEREST.update(
+        {
+          user_interest: userInterestRecord.user_interest + intAmount,
+          update_date: new Date().toISOString().split("T")[0], // update_date를 현재 날짜로 설정
+        },
+        {
+          where: {
+            deal_id: dealId,
+            user_id: userId,
+          },
+        }
+      );
+    }
+
+    // Update the total_interest in DEAL_INFO
+    const dealUpdate = await DEAL_INFO.findOne({ where: { deal_id: dealId } });
+    const newTotalInterest = (dealUpdate.total_interest || 0) + intAmount;
+
+    await DEAL_INFO.update(
+      { total_interest: newTotalInterest },
+      { where: { deal_id: dealId } }
+    );
+
+    res.status(200).json({ message: "Interest updated successfully" });
+  } catch (error) {
+    console.error("Error updating user interest:", error);
+    res.status(500).json({ message: "Error updating user interest" });
+  }
+};
+
 module.exports = {
   getDeals,
   getDealById,
+  updateUserInterest,
 };
