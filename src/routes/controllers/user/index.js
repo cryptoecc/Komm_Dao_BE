@@ -3,6 +3,7 @@ const userController = require("./user.controller");
 const upload = require("../../../utils/multer");
 const profileRouter = require("./profile");
 const watchlistRouter = require("./watchlist");
+const userContributionController = require("./contribution/user.contribution.controller");
 
 const router = express.Router();
 
@@ -18,5 +19,7 @@ router.post(
 );
 router.use("/profile", profileRouter);
 router.use("/watchlist", watchlistRouter);
+
+router.get("/twitter/auth", userContributionController.twitterOAuth);
 
 module.exports = router;
