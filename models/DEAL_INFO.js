@@ -7,10 +7,7 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
-        references: {
-          model: "USER_DEAL_INTEREST",
-          key: "deal_id",
-        },
+        autoIncrement: true,
       },
       pjt_id: {
         type: DataTypes.INTEGER,
@@ -48,37 +45,34 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
       },
       deal_summary: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       deal_desc: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       deal_status: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
+        defaultValue: "RAISING",
         comment: "comm_code = deal_status RAISING - ADMIN - CLOSED",
       },
       total_interest: {
         type: DataTypes.FLOAT(53),
-        allowNull: false,
+        allowNull: true,
       },
       final_cap: {
         type: DataTypes.FLOAT(53),
-        allowNull: false,
+        allowNull: true,
       },
       total_cur_paid: {
         type: DataTypes.FLOAT(53),
-        allowNull: false,
+        allowNull: true,
       },
       payment_due_date: {
         type: DataTypes.DATEONLY,
-        allowNull: false,
-      },
-      start_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
+        allowNull: true,
       },
       end_date: {
         type: DataTypes.DATEONLY,
@@ -91,7 +85,7 @@ module.exports = function (sequelize, DataTypes) {
       },
       update_date: {
         type: DataTypes.DATEONLY,
-        allowNull: false,
+        allowNull: true,
       },
     },
     {

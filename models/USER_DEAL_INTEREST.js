@@ -6,12 +6,16 @@ module.exports = function (sequelize, DataTypes) {
       deal_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        primaryKey: true,
+        primaryKey: true, // 복합 기본 키의 일부
+        references: {
+          model: "DEAL_INFO", // 외래 키 참조 설정
+          key: "deal_id",
+        },
       },
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        primaryKey: true,
+        primaryKey: true, // 복합 기본 키의 일부
       },
       user_interest: {
         type: DataTypes.DOUBLE,

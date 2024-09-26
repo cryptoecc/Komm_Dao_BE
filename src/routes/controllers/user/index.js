@@ -2,6 +2,8 @@ const express = require("express");
 const userController = require("./user.controller");
 const upload = require("../../../utils/multer");
 const profileRouter = require("./profile");
+const watchlistRouter = require("./watchlist");
+const userContributionController = require("./contribution/user.contribution.controller");
 
 const router = express.Router();
 
@@ -16,5 +18,18 @@ router.post(
   userController.submit
 );
 router.use("/profile", profileRouter);
+router.use("/watchlist", watchlistRouter);
+
+// 트위터 OAuth 2.0 인증 시작
+router.post("/twitter/auth", userContributionController.twitterOAuth);
+
+// 트위터 OAuth 2.0 콜백 처리 (Access Token 요청)
+router.get("/twitter/callback", userContributionController.getAccessToken);
+
+// Access Token을 사용한 API 호출
+router.get(
+  "/twitter/user",
+  userContributionController.makeAuthenticatedRequest
+);
 
 module.exports = router;

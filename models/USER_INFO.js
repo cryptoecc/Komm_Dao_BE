@@ -9,10 +9,6 @@ module.exports = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
-        references: {
-          model: "USER_PROPOSAL",
-          key: "user_id",
-        },
       },
       user_name: {
         type: DataTypes.STRING(255),
@@ -33,11 +29,11 @@ module.exports = (sequelize) => {
           "COMM_CODE = USER_EXPERTISE USER_INV USER_RES USER_DEV USER_MAR USER_DES USER_LAW USER_HH",
       },
       bio: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       value_add: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       reg_date: {
@@ -57,7 +53,7 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       nft_link: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       user_image_link: {
@@ -111,7 +107,7 @@ module.exports = (sequelize) => {
 
     UserInfo.hasOne(models.ADMIN_USER, {
       foreignKey: "user_id",
-      as: "admin", // 관계의 별칭
+      as: "admin",
     });
   };
 

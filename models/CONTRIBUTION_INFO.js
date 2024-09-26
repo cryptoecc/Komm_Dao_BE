@@ -4,8 +4,9 @@ module.exports = function (sequelize, DataTypes) {
     "CONTRIBUTION_INFO",
     {
       cont_id: {
-        type: DataTypes.DOUBLE,
+        type: DataTypes.INTEGER,
         allowNull: false,
+        autoIncrement: true,
         primaryKey: true,
       },
       pjt_id: {
@@ -26,17 +27,25 @@ module.exports = function (sequelize, DataTypes) {
         comment:
           "COMM_CODE = CONT_TYPE CON_COM_ENA CON_NOD_VAL CON_RES CON_MAR",
       },
-      cont_summary: {
+      cont_category: {
         type: DataTypes.STRING(255),
-        allowNull: true,
+        allowNull: false,
+      },
+      max_participant: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+      },
+      cont_logo: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      cont_banner: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
       },
       cont_desc: {
         type: DataTypes.STRING(255),
         allowNull: false,
-      },
-      cont_reward: {
-        type: DataTypes.DOUBLE,
-        allowNull: true,
       },
       start_date: {
         type: DataTypes.DATEONLY,
@@ -53,55 +62,7 @@ module.exports = function (sequelize, DataTypes) {
       cont_status: {
         type: DataTypes.STRING(255),
         allowNull: false,
-      },
-      // USER_CONTRIBUTION을 참조하는 외래 키 필드를 제거합니다.
-      // ms_1_id: {
-      //   type: DataTypes.DOUBLE,
-      //   allowNull: true,
-      //   references: {
-      //     model: "USER_CONTRIBUTION",
-      //     key: "ms_1_id",
-      //   },
-      // },
-      ms_1_type: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      ms_1_url: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      // ms_2_id: {
-      //   type: DataTypes.DOUBLE,
-      //   allowNull: true,
-      //   references: {
-      //     model: "USER_CONTRIBUTION",
-      //     key: "ms_2_id",
-      //   },
-      // },
-      ms_2_type: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      ms_2_url: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      // ms_3_id: {
-      //   type: DataTypes.DOUBLE,
-      //   allowNull: true,
-      //   references: {
-      //     model: "USER_CONTRIBUTION",
-      //     key: "ms_3_id",
-      //   },
-      // },
-      ms_3_type: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-      },
-      ms_3_url: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
+        defaultValue: "PENDING",
       },
     },
     {

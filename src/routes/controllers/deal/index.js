@@ -1,10 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const { getDeals } = require("./deal.controller");
+const {
+  getDeals,
+  getDealById,
+  updateUserInterest,
+} = require("./deal.controller");
 
 // Route to get all deals
 router.get("/", getDeals);
-
-// You can add more routes here as needed, such as POST, PUT, DELETE for deals
+router.get("/:dealId", getDealById);
+router.put("/:dealId/user/:userId/interest", updateUserInterest);
 
 module.exports = router;

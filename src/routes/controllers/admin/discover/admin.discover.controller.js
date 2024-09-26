@@ -47,6 +47,31 @@ exports.projectList = async (req, res) => {
   }
 };
 
+exports.appliedProject = async (req, res) => {
+  try {
+    const projects = await ProjectInfo.findAll({
+      attributes: ["pjt_id", "pjt_name", "apply_yn"],
+      where: {
+        apply_yn: "Y",
+      },
+      order: [["update_date", "DESC"]], // 최신 업데이트가 먼저 오도록 정렬
+    });
+
+    // 날짜 형식을 가공
+    const formattedProjects = projects.map((project) => ({
+      ...project.toJSON(),
+      update_date: project.update_date
+        ? project.update_date.toISOString().split("T")[0]
+        : null,
+    }));
+
+    res.json(formattedProjects);
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 exports.projectApply = async (req, res) => {
   const { pjt_id } = req.body;
 

@@ -4,6 +4,7 @@ const adminUserController = require("./user/admin.user.controller");
 const adminContractController = require("./contract/admin.contract.controller");
 const adminDiscoverController = require("./discover/admin.discover.controller");
 const adminContributionController = require("./contribution/admin.contribution.controller");
+const adminDealController = require("./deal/admin.deal.controller");
 const router = express.Router();
 const { loginAttemptLimit } = require("../../../utils/utils");
 const upload = require("../../../../src/utils/multer");
@@ -46,10 +47,41 @@ router.get("/contract-query/:name", adminContractController.queryContract);
 
 // Discover
 router.get("/project-list", adminDiscoverController.projectList);
+router.get("/applied-project", adminDiscoverController.appliedProject);
 router.post("/apply-project", adminDiscoverController.projectApply);
 router.post("/update-project", adminDiscoverController.projectUpdate);
 
 // Contribution
 router.get("/contribution-list", adminContributionController.contributionList);
+router.post(
+  "/create-contribution",
+  upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 },
+  ]),
+  adminContributionController.cerateContribution
+);
+
+// Deal
+router.post(
+  "/create-deal",
+  upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 },
+  ]),
+  adminDealController.createDeal
+);
+
+router.put(
+  "/deals/:dealId",
+  upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 },
+  ]),
+  adminDealController.updateDeal
+);
+
+router.get("/deal-list", adminDealController.dealList);
+router.delete("/deals/:dealId", adminDealController.deleteDeal);
 
 module.exports = router;

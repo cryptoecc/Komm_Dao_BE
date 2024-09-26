@@ -1,6 +1,5 @@
 const { Sequelize, DataTypes } = require("sequelize");
 
-// 수정사항 : 테이블 동기화 후 AUTO_INCREMENT를 1로 리셋하는 후크 추가
 module.exports = function (sequelize, DataTypes) {
   const ProjectInfo = sequelize.define(
     "PROJECT_INFO",
@@ -15,10 +14,6 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
-        references: {
-          model: "USER_RATING",
-          key: "pjt_id",
-        },
       },
       pjt_name: {
         type: DataTypes.STRING(255),
@@ -115,7 +110,7 @@ module.exports = function (sequelize, DataTypes) {
       update_date: {
         type: DataTypes.DATE,
         allowNull: true,
-        defaultValue: Sequelize.Sequelize.literal("CURRENT_TIMESTAMP"),
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
       update_yn: {
         type: DataTypes.STRING(255),
@@ -153,10 +148,23 @@ module.exports = function (sequelize, DataTypes) {
       ],
     }
   );
+
   // 테이블 동기화 후 AUTO_INCREMENT를 1로 리셋하는 후크 추가
   ProjectInfo.afterSync(async () => {
     await sequelize.query("ALTER TABLE PROJECT_INFO AUTO_INCREMENT = 1");
   });
 
+  // 관계 설정
+  ProjectInfo.associate = (models) => {
+    ProjectInfo.hasMany(models.USER_WATCHLIST, {
+      foreignKey: "pjt_id",
+      as: "watchlistEntries",
+    });
+  };
+
   return ProjectInfo;
 };
+
+// ProjectInfo.hasMany(models.USER_WATCHLIST, { ... })는 ProjectInfo 모델과 USER_WATCHLIST 모델 간의 일대다 관계를 설정합니다.
+// foreignKey: "pjt_id"는 USER_WATCHLIST 테이블에서 ProjectInfo의 기본 키와 연결될 외래 키를 지정합니다.
+// as: "watchlistEntries"는 이 관계의 별칭을 지정하여 데이터 조회 시 편리하게 사용할 수 있도록 합니다.
