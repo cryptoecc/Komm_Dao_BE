@@ -29,11 +29,11 @@ module.exports = (sequelize) => {
           "COMM_CODE = USER_EXPERTISE USER_INV USER_RES USER_DEV USER_MAR USER_DES USER_LAW USER_HH",
       },
       bio: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       value_add: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       reg_date: {
@@ -53,7 +53,7 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       nft_link: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       user_image_link: {

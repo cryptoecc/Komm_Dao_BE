@@ -45,11 +45,11 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
       },
       deal_summary: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       deal_desc: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       deal_status: {

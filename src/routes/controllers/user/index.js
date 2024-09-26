@@ -20,6 +20,16 @@ router.post(
 router.use("/profile", profileRouter);
 router.use("/watchlist", watchlistRouter);
 
-router.get("/twitter/auth", userContributionController.twitterOAuth);
+// 트위터 OAuth 2.0 인증 시작
+router.post("/twitter/auth", userContributionController.twitterOAuth);
+
+// 트위터 OAuth 2.0 콜백 처리 (Access Token 요청)
+router.get("/twitter/callback", userContributionController.getAccessToken);
+
+// Access Token을 사용한 API 호출
+router.get(
+  "/twitter/user",
+  userContributionController.makeAuthenticatedRequest
+);
 
 module.exports = router;
