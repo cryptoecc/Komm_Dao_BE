@@ -6,7 +6,16 @@ const router = require("./routes");
 const { sequelize, UserInfo, EmailLog } = require("../models");
 const path = require("path");
 const dotenv = require("dotenv");
+const session = require("express-session");
+const MemoryStore = require("memorystore")(session); // 메모리 저장소 사용
+const RedisStore = require("connect-redis").default;
+const redis = require("redis");
 
+// const redisClient = redis.createClient({
+//   legacyMode: true, // 최신 redis 버전 사용 시 이 옵션을 추가해 주세요.
+// });
+
+// redisClient.connect().catch(console.error);
 // NODE_ENV에 따라 적절한 .env 파일을 로드합니다.
 const envFile = `.env.${process.env.NODE_ENV || "development"}`;
 dotenv.config({ path: path.resolve(__dirname, envFile) });
@@ -32,9 +41,27 @@ const generateHashedPassword = async (password) => {
 generateHashedPassword("dao1541");
 
 const app = express();
+app.use(
+  session({
+    secret: "yourSecretKey", // 세션 암호화에 사용할 비밀 키
+    resave: false, // 세션을 강제로 다시 저장할지 여부
+    saveUninitialized: false, // 초기화되지 않은 세션을 저장할지 여부
+    store: new MemoryStore({ checkPeriod: 86400000 }), // 세션 유지 시간 설정
+    cookie: {
+      secure: false, // https 사용 시 true로 설정
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 쿠키 만료 시간 설정 (1일)
+    },
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(bodyParser.json());
 
