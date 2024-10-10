@@ -109,7 +109,25 @@ module.exports = (sequelize) => {
       foreignKey: "user_id",
       as: "admin",
     });
+
+    UserInfo.hasMany(models.USER_DEAL_INTEREST, {
+      foreignKey: "user_id",
+      as: "dealInterests",
+    });
+
+    UserInfo.hasMany(models.USER_INVITE_CONTRIBUTION, {
+      foreignKey: "user_id",
+      as: "sentInvites", // 초대장을 보낸 유저의 정보를 나타내는 관계
+    });
   };
+
+  // // 관계 설정
+  // UserInfo.associate = function (models) {
+  //   UserInfo.hasMany(models.USER_DEAL_INTEREST, {
+  //     foreignKey: "user_id",
+  //     as: "dealInterests",
+  //   });
+  // };
 
   return UserInfo;
 };

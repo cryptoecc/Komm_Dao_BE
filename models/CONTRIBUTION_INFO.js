@@ -5,8 +5,8 @@ module.exports = function (sequelize, DataTypes) {
     {
       cont_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
         autoIncrement: true,
+        allowNull: false,
         primaryKey: true,
       },
       pjt_id: {
@@ -30,6 +30,10 @@ module.exports = function (sequelize, DataTypes) {
       cont_category: {
         type: DataTypes.STRING(255),
         allowNull: false,
+      },
+      cur_participant: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
       },
       max_participant: {
         type: DataTypes.DOUBLE,

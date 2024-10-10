@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
-module.exports = function (sequelize, DataTypes) {
-  return sequelize.define(
+module.exports = (sequelize, DataTypes) => {
+  const DealInfo = sequelize.define(
     "DEAL_INFO",
     {
       deal_id: {
@@ -107,4 +107,14 @@ module.exports = function (sequelize, DataTypes) {
       ],
     }
   );
+
+  // 관계 설정
+  DealInfo.associate = function (models) {
+    DealInfo.hasMany(models.USER_DEAL_INTEREST, {
+      foreignKey: "deal_id",
+      as: "dealInterests",
+    });
+  };
+
+  return DealInfo;
 };

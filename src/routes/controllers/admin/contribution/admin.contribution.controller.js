@@ -102,3 +102,29 @@ exports.cerateContribution = async (req, res) => {
     });
   }
 };
+
+// 백엔드 컨트롤러 예시 (adminContribution.controller.js)
+exports.updateContributionStatus = async (req, res) => {
+  const { cont_id, cont_status } = req.body;
+
+  try {
+    // `cont_id`에 해당하는 CONTRIBUTION_INFO의 상태 업데이트
+    const result = await ContributionInfo.update(
+      { cont_status },
+      {
+        where: { cont_id },
+      }
+    );
+
+    if (result[0] > 0) {
+      res
+        .status(200)
+        .json({ message: "Contribution status updated successfully" });
+    } else {
+      res.status(404).json({ message: "Contribution not found" });
+    }
+  } catch (error) {
+    console.error("Error updating contribution status:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

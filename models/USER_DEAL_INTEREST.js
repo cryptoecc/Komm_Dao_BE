@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
-module.exports = function (sequelize, DataTypes) {
-  return sequelize.define(
+module.exports = (sequelize, DataTypes) => {
+  const UserDealInterest = sequelize.define(
     "USER_DEAL_INTEREST",
     {
       deal_id: {
@@ -66,4 +66,19 @@ module.exports = function (sequelize, DataTypes) {
       ],
     }
   );
+
+  // 관계 설정
+  UserDealInterest.associate = function (models) {
+    UserDealInterest.belongsTo(models.DEAL_INFO, {
+      foreignKey: "deal_id",
+      as: "deal",
+    });
+
+    UserDealInterest.belongsTo(models.USER_INFO, {
+      foreignKey: "user_id",
+      as: "user",
+    });
+  };
+
+  return UserDealInterest;
 };
