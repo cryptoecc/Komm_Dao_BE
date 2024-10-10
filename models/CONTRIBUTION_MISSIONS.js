@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize");
 
 module.exports = function (sequelize, DataTypes) {
-  return sequelize.define(
+  const ContributionMission = sequelize.define(
     "CONTRIBUTION_MISSIONS",
     {
       ms_id: {
@@ -40,4 +40,19 @@ module.exports = function (sequelize, DataTypes) {
       ],
     }
   );
+
+  ContributionMission.associate = function (models) {
+    // USER_INVITE_CONTRIBUTION 모델과의 관계 설정
+    ContributionMission.hasMany(models.USER_INVITE_CONTRIBUTION, {
+      foreignKey: "ms_id",
+      as: "invitesByMission",
+    });
+
+    ContributionMission.hasMany(models.USER_INVITE_CONTRIBUTION, {
+      foreignKey: "cont_id",
+      as: "invitesByContribution",
+    });
+  };
+
+  return ContributionMission;
 };

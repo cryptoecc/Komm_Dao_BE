@@ -61,6 +61,10 @@ router.post(
   ]),
   adminContributionController.cerateContribution
 );
+router.put(
+  "/contribution-status",
+  adminContributionController.updateContributionStatus
+);
 
 // Deal
 router.post(
@@ -83,5 +87,10 @@ router.put(
 
 router.get("/deal-list", adminDealController.dealList);
 router.delete("/deals/:dealId", adminDealController.deleteDeal);
+router.get("/deal-interest", adminDealController.getDealInterest);
+router.post("/deal-interestMsg", adminDealController.sendEmailNotifications);
+router.put("/update-payment-period", adminDealController.updatePaymentPeriod);
+router.put("/update-verify-status", adminDealController.verifyPaymentStatus);
+router.put("/update-complete-status", adminDealController.updateCompleteStatus);
 
 module.exports = router;

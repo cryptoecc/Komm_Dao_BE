@@ -11,22 +11,15 @@ const MemoryStore = require("memorystore")(session); // 메모리 저장소 사�
 const RedisStore = require("connect-redis").default;
 const redis = require("redis");
 
-// const redisClient = redis.createClient({
-//   legacyMode: true, // 최신 redis 버전 사용 시 이 옵션을 추가해 주세요.
-// });
-
-// redisClient.connect().catch(console.error);
-// NODE_ENV에 따라 적절한 .env 파일을 로드합니다.
 const envFile = `.env.${process.env.NODE_ENV || "development"}`;
 dotenv.config({ path: path.resolve(__dirname, envFile) });
 
-// const corsOptions = {
-//   origin: ["*"],
-//   // allowedHeaders: ["Authorization", "Content-Type"],
-//   // credentials: true,
-// };
-
 const bcrypt = require("bcrypt");
+const {
+  updateDealStatus,
+  updatePaymentVerifyStatus,
+  updatePaymentStatus,
+} = require("./routes/controllers/admin/deal/admin.deal.controller");
 
 const generateHashedPassword = async (password) => {
   try {
@@ -39,6 +32,15 @@ const generateHashedPassword = async (password) => {
 
 // 예시 비밀번호로 해시 생성
 generateHashedPassword("dao1541");
+
+// status 자동 update
+updateDealStatus();
+
+// status 자동 update (verify)
+updatePaymentVerifyStatus();
+
+// Pay_Amount status update
+updatePaymentStatus();
 
 const app = express();
 app.use(
