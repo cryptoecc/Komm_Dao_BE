@@ -4,6 +4,8 @@ const {
   KohortMember,
   KommitteeInfo,
   UserInfo,
+  UserInviteContribution,
+  UserContribution,
 } = require("../../../../../models/index");
 const { Op } = require("sequelize");
 
@@ -41,16 +43,84 @@ exports.memberList = async (req, res) => {
   }
 };
 
+// 초대 상태를 업데이트하는 별도 함수
+const updateInviteContributionStatus = async (email, status) => {
+  // USER_INVITE_CONTRIBUTION에 해당 이메일이 있는지 확인 후 상태 업데이트
+  const [updatedRows] = await UserInviteContribution.update(
+    {
+      status: status, // 상태값 업데이트 (예: APPLIED, REJECTED)
+      status_date: new Date(), // 상태가 변경된 현재 날짜
+    },
+    { where: { invite_email: email } }
+  );
+
+  // 해당 이메일이 USER_INVITE_CONTRIBUTION에 없으면 로그 처리
+  if (updatedRows === 0) {
+    console.log(`No invites found for email: ${email}`);
+    return;
+  }
+
+  // status가 APPLIED로 업데이트되었을 경우 XP 포인트 처리
+  if (status === "APPLIED") {
+    // 초대한 유저의 user_id와 APPLIED된 초대 횟수 가져오기
+    const appliedInvites = await UserInviteContribution.findAll({
+      where: {
+        invite_email: email,
+        status: "APPLIED",
+      },
+      attributes: ["user_id"], // 초대한 유저의 user_id 가져오기
+      raw: true,
+    });
+
+    for (const invite of appliedInvites) {
+      const inviterUserId = invite.user_id;
+
+      // APPLIED된 초대 횟수 가져오기
+      const appliedCount = await UserInviteContribution.count({
+        where: {
+          user_id: inviterUserId, // 해당 유저가 초대한 사람들 중에서
+          status: "APPLIED", // APPLIED된 상태의 초대
+        },
+      });
+
+      // APPLIED된 횟수만큼 XP 포인트 계산 (100 * APPLIED된 수)
+      const xpPoints = appliedCount * 100;
+
+      // 해당 유저의 UserContribution 테이블의 XP 업데이트
+      await UserContribution.update(
+        { cont_xp: xpPoints, claim_yn: "Y" },
+        { where: { user_id: inviterUserId } }
+      );
+    }
+  }
+};
+
 exports.updateStatus = async (req, res) => {
   const { user_id, status } = req.body;
 
   try {
+    // 1. UserInfo에서 user_id로 email_addr 가져오기
+    const user = await UserInfo.findOne({
+      where: { user_id },
+      attributes: ["email_addr"],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const email = user.email_addr;
+
     await UserInfo.update({ appr_status: status }, { where: { user_id } });
     if (status == "APPLIED") {
       await UserInfo.update({ activate_yn: "Y" }, { where: { user_id } });
       //   await UserInfo.update({ activate_yn: "Y" }, { where: { user_id } });
+
+      // 4. USER_INVITE_CONTRIBUTION 테이블 상태 업데이트 함수 호출
+      await updateInviteContributionStatus(email, "APPLIED");
     } else {
       await UserInfo.update({ activate_yn: "N" }, { where: { user_id } });
+      await updateInviteContributionStatus(email, status);
     }
 
     res.status(200).json({ message: "Status updated successfully" });
