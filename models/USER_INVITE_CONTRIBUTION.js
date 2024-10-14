@@ -54,6 +54,16 @@ module.exports = function (sequelize, DataTypes) {
         defaultValue: "PENDING", // 기본 값은 PENDING으로 설정
         comment: "초대 받은 이메일의 승인 상태 (PENDING/APPROVED/REJECTED)",
       },
+      invite_date: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: "초대된 날짜",
+      },
+      status_date: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: "상태가 변경된 날짜",
+      },
     },
     {
       sequelize,
@@ -80,6 +90,24 @@ module.exports = function (sequelize, DataTypes) {
       ],
     }
   );
+
+  // 관계 설정
+  UserInviteContribution.associate = function (models) {
+    UserInviteContribution.belongsTo(models.CONTRIBUTION_INFO, {
+      foreignKey: "cont_id",
+      as: "contribution",
+    });
+
+    UserInviteContribution.belongsTo(models.CONTRIBUTION_MISSIONS, {
+      foreignKey: "ms_id",
+      as: "mission",
+    });
+
+    UserInviteContribution.belongsTo(models.USER_INFO, {
+      foreignKey: "user_id",
+      as: "user",
+    });
+  };
 
   return UserInviteContribution;
 };
