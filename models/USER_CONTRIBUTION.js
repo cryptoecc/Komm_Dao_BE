@@ -44,6 +44,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.FLOAT(53),
         allowNull: true,
       },
+      total_xp: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+      },
     },
     {
       sequelize,

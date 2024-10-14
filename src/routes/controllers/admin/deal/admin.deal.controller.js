@@ -85,6 +85,8 @@ exports.dealList = async (req, res) => {
       deal_banner_url: deal.deal_background || "",
       deal_status: deal.deal_status || "PENDING", // deal 상태 전달
       deal_round: deal.deal_round || "N/A", // deal 라운드 전달
+      deal_max_interest: deal.max_interest || "",
+      deal_min_interest: deal.min_interest || "",
     }));
 
     // Log the transformed deals data
@@ -102,15 +104,15 @@ exports.updateDeal = async (req, res) => {
   try {
     // Deal ID를 가져옵니다.
     const { dealId } = req.params;
-
+    console.log(dealId);
     // 파일이 존재하는지 확인하고 경로 설정
-    const profileImageLink = req.files.profileImage
-      ? `uploads/deal/${req.files.profileImage[0].filename}`
-      : null; // 파일이 없다면 업데이트하지 않음
+    // const profileImageLink = req.files.profileImage
+    //   ? `uploads/deal/${req.files.profileImage[0].filename}`
+    //   : null; // 파일이 없다면 업데이트하지 않음
 
-    const bannerImageLink = req.files.bannerImage
-      ? `uploads/deal/${req.files.bannerImage[0].filename}`
-      : null; // 파일이 없다면 업데이트하지 않음
+    // const bannerImageLink = req.files.bannerImage
+    //   ? `uploads/deal/${req.files.bannerImage[0].filename}`
+    //   : null; // 파일이 없다면 업데이트하지 않음
 
     // 요청된 데이터 추출
     const {
@@ -136,12 +138,13 @@ exports.updateDeal = async (req, res) => {
       max_interest,
     };
 
-    // 이미지가 제공되면 업데이트 데이터에 추가
-    if (profileImageLink) {
-      updateData.deal_logo = profileImageLink;
+    // 파일이 존재할 때만 링크 업데이트
+    if (req.files && req.files.profileImage) {
+      updateData.deal_logo = `uploads/deal/${req.files.profileImage[0].filename}`;
     }
-    if (bannerImageLink) {
-      updateData.deal_background = bannerImageLink;
+
+    if (req.files && req.files.bannerImage) {
+      updateData.deal_background = `uploads/deal/${req.files.bannerImage[0].filename}`;
     }
 
     // Deal 정보 업데이트
@@ -150,7 +153,7 @@ exports.updateDeal = async (req, res) => {
     });
 
     if (updatedDeal[0] === 0) {
-      return res.status(404).json({ message: "Deal not found" });
+      return res.status(200).json({ message: "Deal not found" });
     }
 
     // 업데이트 성공
