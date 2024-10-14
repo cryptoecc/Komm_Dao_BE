@@ -70,6 +70,11 @@ const ContributionMissions = require("./CONTRIBUTION_MISSIONS")(
 );
 const DealInfo = require("./DEAL_INFO")(sequelize, DataTypes);
 const UserDealInterest = require("./USER_DEAL_INTEREST")(sequelize, DataTypes);
+const UserInviteContribution = require("./USER_INVITE_CONTRIBUTION")(
+  sequelize,
+  DataTypes
+);
+const UserContribution = require("./USER_CONTRIBUTION")(sequelize, DataTypes);
 
 db.ProjectInfo = ProjectInfo;
 db.sequelize = sequelize;
@@ -85,6 +90,8 @@ db.ContributionInfo = ContributionInfo;
 db.ContributionMissions = ContributionMissions;
 db.DealInfo = DealInfo;
 db.UserDealInterest = UserDealInterest;
+db.UserInviteContribution = UserInviteContribution;
+db.UserContribution = UserContribution;
 
 // 모델 간의 관계 설정
 Object.keys(db).forEach((modelName) => {

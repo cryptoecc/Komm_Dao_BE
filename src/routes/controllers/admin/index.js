@@ -66,6 +66,11 @@ router.put(
   adminContributionController.updateContributionStatus
 );
 
+router.get(
+  "/invite-details/:cont_id",
+  adminContributionController.getInviteDetail
+);
+
 // Deal
 router.post(
   "/create-deal",
