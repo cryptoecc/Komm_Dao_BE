@@ -47,6 +47,90 @@ exports.projectList = async (req, res) => {
   }
 };
 
+exports.addProject = async (req, res) => {
+  const {
+    pjt_name,
+    website,
+    category,
+    x_link,
+    x_followers,
+    discord_link,
+    discord_members,
+    linkedIn_link,
+    github_link,
+    github_stars,
+    github_wkly_comm,
+    raising_amount,
+    valuation,
+    investors,
+    pjt_grade,
+    pjt_summary,
+    pjt_details,
+    adm_trend,
+    adm_expertise,
+    adm_final_grade,
+  } = req.body;
+
+  try {
+    // 새로운 프로젝트 데이터를 생성
+    const newProject = await ProjectInfo.create({
+      pjt_name,
+      website,
+      category,
+      x_link,
+      x_followers,
+      discord_link,
+      discord_members,
+      linkedIn_link,
+      github_link,
+      github_stars,
+      github_wkly_comm,
+      raising_amount,
+      valuation,
+      investors,
+      pjt_grade,
+      pjt_summary,
+      pjt_details,
+      adm_trend,
+      adm_expertise,
+      adm_final_grade,
+      create_date: new Date(), // 현재 날짜로 설정
+      update_date: new Date(), // 현재 날짜로 설정
+      apply_yn: "N", // 기본값 설정
+    });
+
+    res.status(200).json({
+      message: "Project created successfully",
+      project: newProject,
+    });
+  } catch (error) {
+    console.error("Error adding project:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to add project", error: error.message });
+  }
+};
+
+// admin.discover.controller.js
+exports.deleteProjects = async (req, res) => {
+  const { ids } = req.body;
+
+  try {
+    await ProjectInfo.destroy({
+      where: {
+        pjt_id: {
+          [Op.in]: ids, // 선택된 ids에 해당하는 데이터만 삭제
+        },
+      },
+    });
+
+    res.status(200).json({ message: "Projects deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting projects:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 exports.appliedProject = async (req, res) => {
   try {
     const projects = await ProjectInfo.findAll({
