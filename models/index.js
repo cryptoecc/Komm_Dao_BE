@@ -75,6 +75,7 @@ const UserInviteContribution = require("./USER_INVITE_CONTRIBUTION")(
   DataTypes
 );
 const UserContribution = require("./USER_CONTRIBUTION")(sequelize, DataTypes);
+const UserWatchlist = require("./USER_WATCHLIST")(sequelize, DataTypes);
 
 db.ProjectInfo = ProjectInfo;
 db.sequelize = sequelize;
@@ -92,6 +93,7 @@ db.DealInfo = DealInfo;
 db.UserDealInterest = UserDealInterest;
 db.UserInviteContribution = UserInviteContribution;
 db.UserContribution = UserContribution;
+db.UserWatchlist = UserWatchlist;
 
 // 모델 간의 관계 설정
 Object.keys(db).forEach((modelName) => {
