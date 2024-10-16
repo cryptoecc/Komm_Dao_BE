@@ -14,6 +14,7 @@ var _USER_INFO = require("./USER_INFO");
 var _USER_PROPOSAL = require("./USER_PROPOSAL");
 var _USER_RATING = require("./USER_RATING");
 var _USER_WATCHLIST = require("./USER_WATCHLIST");
+var _USER_POINTSHISTORY = require("./USER_POINTSHISTORY");
 
 function initModels(sequelize) {
   var COMMON = _COMMON(sequelize, DataTypes);
@@ -31,6 +32,7 @@ function initModels(sequelize) {
   var USER_PROPOSAL = _USER_PROPOSAL(sequelize, DataTypes);
   var USER_RATING = _USER_RATING(sequelize, DataTypes);
   var USER_WATCHLIST = _USER_WATCHLIST(sequelize, DataTypes);
+  var USER_POINTSHISTORY = _USER_POINTSHISTORY(sequelize, DataTypes);
 
   USER_CONTRIBUTION.belongsTo(CONTRIBUTION_INFO, {
     as: "cont",
@@ -166,6 +168,7 @@ function initModels(sequelize) {
     USER_PROPOSAL,
     USER_RATING,
     USER_WATCHLIST,
+    USER_POINTSHISTORY,
   };
 }
 module.exports = initModels;
