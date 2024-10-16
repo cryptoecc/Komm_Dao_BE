@@ -3,21 +3,11 @@ const path = require("path");
 const { Sequelize, DataTypes } = require("sequelize");
 const dotenv = require("dotenv");
 
-// const envFile = `.env.${process.env.NODE_ENV || "development"}`;
-// dotenv.config({ path: path.resolve(process.cwd(), envFile) });
-
+// 환경 변수 설정
 const envFile = `.env.${process.env.NODE_ENV || "development"}`;
 dotenv.config({ path: path.resolve(__dirname, "..", envFile) });
 
-// 환경 설정 파일의 경로를 설정합니다.
-const env = process.env.NODE_ENV || "development";
-const configPath = path.resolve(__dirname, "../config/config.local.json"); // config.local.json을 정확히 지정
-
-// 설정 파일을 읽어옵니다.
-// const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-
-const db = {};
-
+// 데이터베이스 설정 정보
 const dbConfig = {
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
@@ -29,6 +19,7 @@ const dbConfig = {
 
 console.log(dbConfig);
 
+// Sequelize 인스턴스 생성
 const sequelize = new Sequelize(
   dbConfig.database,
   dbConfig.user,
@@ -37,9 +28,11 @@ const sequelize = new Sequelize(
     host: dbConfig.host,
     dialect: "mysql",
     port: dbConfig.port, // 포트 설정 추가
-    timezone: "+09:00",
+    timezone: "+09:00", // 한국 시간대 설정
   }
 );
+
+const db = {};
 
 // 모델 정의 및 불러오기
 fs.readdirSync(__dirname)
@@ -55,6 +48,7 @@ fs.readdirSync(__dirname)
     db[model.name] = model;
   });
 
+// 개별 모델 정의
 const UserInfo = require("./USER_INFO")(sequelize, DataTypes);
 const EmailLog = require("./USER_EMAIL_LOG")(sequelize, DataTypes);
 const AdminUser = require("./ADMIN_USER")(sequelize, DataTypes);
@@ -75,11 +69,10 @@ const UserInviteContribution = require("./USER_INVITE_CONTRIBUTION")(
   DataTypes
 );
 const UserContribution = require("./USER_CONTRIBUTION")(sequelize, DataTypes);
+const UserPointsHistory = require("./USER_POINTSHISTORY")(sequelize, DataTypes); // 추가된 부분
 const UserWatchlist = require("./USER_WATCHLIST")(sequelize, DataTypes);
 
-db.ProjectInfo = ProjectInfo;
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
+// 모델 등록
 db.UserInfo = UserInfo;
 db.EmailLog = EmailLog;
 db.AdminUser = AdminUser;
@@ -87,12 +80,16 @@ db.KommitteeInfo = KommitteeInfo;
 db.KohortInfo = KohortInfo;
 db.KohortMember = KohortMember;
 db.Contracts = Contracts;
+db.ProjectInfo = ProjectInfo;
 db.ContributionInfo = ContributionInfo;
 db.ContributionMissions = ContributionMissions;
 db.DealInfo = DealInfo;
 db.UserDealInterest = UserDealInterest;
 db.UserInviteContribution = UserInviteContribution;
 db.UserContribution = UserContribution;
+db.UserPointsHistory = UserPointsHistory;
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 db.UserWatchlist = UserWatchlist;
 
 // 모델 간의 관계 설정
