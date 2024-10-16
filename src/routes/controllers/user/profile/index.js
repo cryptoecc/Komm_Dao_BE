@@ -8,6 +8,7 @@ const {
   updatePointHistory,
   getUserPointHistory,
   updateXPBalance,
+  getUserDealInterest,
 } = require("./profile.controller"); // 컨트롤러 임포트
 
 // 프로필 정보 가져오기 라우터
@@ -27,5 +28,7 @@ router.post("/update-history", updatePointHistory);
 
 // Point History 조회 라우터
 router.get("/get-history/:walletAddress", getUserPointHistory);
+
+router.post("/get-user-interest", getUserDealInterest);
 
 module.exports = router;

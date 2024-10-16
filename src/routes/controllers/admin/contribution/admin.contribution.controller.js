@@ -171,9 +171,9 @@ exports.getInviteDetail = async (req, res) => {
 
       // 각 초대자의 초대 멤버 수 및 상태 정보 업데이트
       inviterDetails[userId].invitedMembers += 1;
-      if (invite.status === "APPROVED")
+      if (invite.status === "APPLIED")
         inviterDetails[userId].acceptedMembers += 1;
-      if (invite.status === "REJECTED")
+      if (invite.status === "DENIED")
         inviterDetails[userId].rejectedMembers += 1;
 
       inviterDetails[userId].inviteeList.push({

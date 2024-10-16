@@ -1,4 +1,9 @@
-const { UserInfo, UserPointsHistory } = require("../../../../../models");
+const {
+  UserInfo,
+  UserPointsHistory,
+  UserDealInterest,
+  DealInfo,
+} = require("../../../../../models");
 const { sequelize } = require("../../../../../models");
 const path = require("path");
 const fs = require("fs");
@@ -294,6 +299,83 @@ const getUserPointHistory = async (req, res) => {
   }
 };
 
+// 사용자 참여 정보와 Deal 정보 가져오기
+const getUserDealInterest = async (req, res) => {
+  const { user_id } = req.body;
+  console.log(user_id);
+  try {
+    // UserDealInterest에서 해당 유저의 Deal 정보를 가져옴
+    const userInterests = await UserDealInterest.findAll({
+      where: { user_id },
+      include: [
+        {
+          model: DealInfo,
+          as: "deal",
+          attributes: ["deal_name", "deal_status"], // 필요한 deal 정보만 가져옴
+        },
+      ],
+    });
+
+    if (!userInterests || userInterests.length === 0) {
+      return res.status(404).json({ message: "No deals found for this user." });
+    }
+
+    const formattedData = userInterests.map((interest) => {
+      // deal_status에 따라 user_interest 또는 user_final_alloc 값을 선택
+      const isPaymentPeriod =
+        interest.deal.deal_status === "PAYMENT_PERIOD" ||
+        interest.deal.deal_status === "PAYMENT_VERIFY" ||
+        interest.deal.deal_status === "PAYMENT_COMPLETED";
+
+      // deal_status 변환 로직
+      let statusLabel = "";
+      switch (interest.deal.deal_status) {
+        case "RAISING":
+          statusLabel = "Interest Submitted";
+          break;
+        case "PAYMENT_PENDING":
+          statusLabel = "Payment Pending";
+          break;
+        case "PAYMENT_PERIOD":
+          statusLabel = "Payment Period";
+          break;
+        case "PAYMENT_VERIFY":
+          statusLabel = "Payment Verify";
+          break;
+        case "PAYMENT_COMPLETED":
+          statusLabel = "Payment Completed";
+          break;
+        case "CLOSED":
+          statusLabel = "CLOSED";
+          break;
+        default:
+          statusLabel = "Unknown Status";
+          break;
+      }
+
+      return {
+        deal_id: interest.deal_id,
+        user_value: isPaymentPeriod
+          ? interest.user_final_alloc
+          : interest.user_interest, // 조건에 따라 값 설정
+        deal_name: interest.deal.deal_name,
+        deal_status: statusLabel, // 변환된 deal_status 값
+        update_date: interest.update_date,
+        participation: "Deal",
+      };
+    });
+
+    const sortedData = formattedData.sort(
+      (a, b) => new Date(b.update_date) - new Date(a.update_date)
+    );
+
+    return res.status(200).json(sortedData);
+  } catch (error) {
+    console.error("Error fetching user deal interest:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -302,4 +384,5 @@ module.exports = {
   getUserPointHistory,
   updatePointHistory,
   updateXPBalance,
+  getUserDealInterest,
 };

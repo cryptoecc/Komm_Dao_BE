@@ -8,13 +8,25 @@ const {
   UserContribution,
 } = require("../../../../../models/index");
 const { Op } = require("sequelize");
+const { Sequelize } = require("sequelize"); // Sequelize 모듈을 가져옴
+const nodemailer = require("nodemailer");
+const fs = require("fs");
+const path = require("path");
 
 exports.userList = async (req, res) => {
   try {
     const applicants = await UserInfo.findAll({
       order: [
-        ["appr_status", "ASC"], // PENDING 상태가 먼저 오도록 정렬
-        ["reg_date", "DESC"], // 그 다음은 등록 날짜로 정렬 (원하는 다른 정렬 기준을 사용할 수 있음)
+        [
+          Sequelize.literal(`
+            CASE 
+              WHEN appr_status = 'PENDING' THEN 0 
+              ELSE 1 
+            END
+          `), // PENDING 상태를 먼저 정렬
+          "ASC",
+        ],
+        ["reg_date", "DESC"], // 그 다음은 등록 날짜로 정렬
       ],
     });
     res.json(applicants);
@@ -95,6 +107,104 @@ const updateInviteContributionStatus = async (email, status) => {
   }
 };
 
+// 이메일 전송 함수
+const sendAppliedEmail = async (email, userName, walletAddress) => {
+  const emailTemplatePath = path.join(
+    __dirname,
+    "../../../../utils/templates/welcomeTemplate.html"
+  );
+  console.log(emailTemplatePath);
+  let htmlContent = "";
+
+  // 템플릿 파일을 읽어오는 부분
+  try {
+    htmlContent = fs.readFileSync(emailTemplatePath, "utf8"); // 템플릿 파일 읽기
+
+    // 템플릿 내의 동적 데이터 삽입
+    htmlContent = htmlContent
+      .replace("{{RECIPIENT_NAME}}", userName)
+      .replace("{{User Name}}", userName)
+      .replace("{{User Email}}", email)
+      .replace("{{Wallet Address}}", walletAddress);
+  } catch (error) {
+    console.error("Error reading HTML template:", error);
+    return;
+  }
+
+  // 이메일 전송 설정
+  const transporter = nodemailer.createTransport({
+    service: process.env.EMAIL_SERVICE, // 이메일 서비스 (예: Gmail)
+    auth: {
+      user: process.env.EMAIL_ID, // 발신자 이메일 주소
+      pass: process.env.EMAIL_PASSWORD, // 발신자 이메일 비밀번호
+    },
+  });
+
+  // 이메일 내용 설정
+  const mailOptions = {
+    from: process.env.EMAIL_ID,
+    to: email, // 수신자 이메일 주소
+    subject: "Welcome! Your Membership is Confirmed!",
+    text: "Congratulations! Your invitation has been successfully applied.", // HTML을 지원하지 않는 경우 텍스트로 전송
+    html: htmlContent, // 외부 HTML 템플릿 사용
+  };
+
+  // 이메일 전송
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("Email sent to:", email);
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+};
+
+// DENIED 상태일 때 이메일 전송 함수
+const sendDeniedEmail = async (email, userName) => {
+  const emailTemplatePath = path.join(
+    __dirname,
+    "../../../../utils/templates/DeniedTemplate.html"
+  );
+  console.log(emailTemplatePath);
+  let htmlContent = "";
+
+  // 템플릿 파일을 읽어오는 부분
+  try {
+    htmlContent = fs.readFileSync(emailTemplatePath, "utf8"); // 템플릿 파일 읽기
+
+    // 템플릿 내의 동적 데이터 삽입
+    htmlContent = htmlContent.replace("{{RECIPIENT_NAME}}", userName);
+  } catch (error) {
+    console.error("Error reading HTML template:", error);
+    return;
+  }
+
+  // 이메일 전송 설정
+  const transporter = nodemailer.createTransport({
+    service: process.env.EMAIL_SERVICE, // 이메일 서비스 (예: Gmail)
+    auth: {
+      user: process.env.EMAIL_ID, // 발신자 이메일 주소
+      pass: process.env.EMAIL_PASSWORD, // 발신자 이메일 비밀번호
+    },
+  });
+
+  // 이메일 내용 설정
+  const mailOptions = {
+    from: process.env.EMAIL_ID,
+    to: email, // 수신자 이메일 주소
+    subject: "Your Komm DAO Membership Application Not Approved",
+    text: "Unfortunately, your invitation has been denied.", // HTML을 지원하지 않는 경우 텍스트로 전송
+    html: htmlContent, // 외부 HTML 템플릿 사용
+  };
+
+  // 이메일 전송
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("Email sent to:", email);
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+};
+
 exports.updateStatus = async (req, res) => {
   const { user_id, status } = req.body;
 
@@ -102,7 +212,7 @@ exports.updateStatus = async (req, res) => {
     // 1. UserInfo에서 user_id로 email_addr 가져오기
     const user = await UserInfo.findOne({
       where: { user_id },
-      attributes: ["email_addr"],
+      attributes: ["email_addr", "user_name", "wallet_addr"],
     });
 
     if (!user) {
@@ -118,6 +228,12 @@ exports.updateStatus = async (req, res) => {
 
       // 4. USER_INVITE_CONTRIBUTION 테이블 상태 업데이트 함수 호출
       await updateInviteContributionStatus(email, "APPLIED");
+      // 5. 상태가 APPLIED일 경우 이메일 전송
+      await sendAppliedEmail(email, user.user_name, user.wallet_addr);
+    } else if (status === "DENIED") {
+      await UserInfo.update({ activate_yn: "N" }, { where: { user_id } });
+      await updateInviteContributionStatus(email, status);
+      await sendDeniedEmail(email, user.user_name);
     } else {
       await UserInfo.update({ activate_yn: "N" }, { where: { user_id } });
       await updateInviteContributionStatus(email, status);
