@@ -220,7 +220,7 @@ exports.projectApply = async (req, res) => {
 exports.projectUpdate = async (req, res) => {
   const { pjt_id, ...updateData } = req.body;
 
-  console.log(pjt_id, updateData);
+  console.log(pjt_id, updateData.pjt_name);
   try {
     const project = await ProjectInfo.findOne({ where: { pjt_id } });
 
@@ -231,6 +231,23 @@ exports.projectUpdate = async (req, res) => {
       });
       project.update_date = new Date(); // 업데이트 시각을 현재 시각으로 설정
       await project.save();
+
+      const updatepjtname = updateData.pjt_name;
+      // pjt_name이 업데이트된 경우 관련 테이블들도 업데이트
+      if (updatepjtname) {
+        // DealInfo에서 deal_name 업데이트 (pjt_name + deal_round)
+        await DealInfo.update(
+          { deal_name: updatepjtname },
+          { where: { pjt_id } }
+        );
+
+        // ContributionInfo에서 pjt_name 업데이트
+        await ContributionInfo.update(
+          { pjt_name: updatepjtname },
+          { where: { pjt_id } }
+        );
+      }
+
       res.status(200).json({ message: "Project updated successfully" });
     } else {
       res.status(404).json({ message: "Project not found" });
