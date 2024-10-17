@@ -122,9 +122,24 @@ const updateProfile = async (req, res) => {
 
 // XP 트랜잭션 보내는 기능
 const updateXP = async (req, res) => {
-  const { walletAddress, xpPoints } = req.body;
+  const { walletAddress, xpPoints, projectId } = req.body;
+  console.log(projectId);
 
   try {
+    // 먼저 해당 프로젝트에 대해 이미 XP 클레임이 이루어졌는지 확인
+    const existingClaim = await UserPointsHistory.findOne({
+      where: {
+        wallet_addr: walletAddress,
+        project_id: projectId,
+      },
+    });
+
+    if (existingClaim) {
+      return res
+        .status(400)
+        .json({ message: "XP has already been claimed for this project." });
+    }
+
     // 스마트 계약과 상호작용 (claimXP는 트랜잭션 발생)
     const contract = new web3.eth.Contract(contractABI, contractAddress);
 
@@ -156,16 +171,7 @@ const updateXP = async (req, res) => {
       return res.status(500).json({ message: "Transaction failed" });
     }
 
-    // 이미 기록된 트랜잭션인지 확인
-    const existingHistory = await UserPointsHistory.findOne({
-      where: { transaction_id: receipt.transactionHash },
-    });
-
-    if (existingHistory) {
-      return res.status(400).json({ message: "Transaction already recorded" });
-    }
-
-    // getXP 호출로 사용자의 총 XP 잔액을 가져옴 (이 부분은 조회용이며 트랜잭션 아님)
+    // getXP 호출로 사용자의 총 XP 잔액을 가져옴
     const xpBalanceRaw = await contract.methods.getXP(walletAddress).call();
     const xpBalance = parseInt(xpBalanceRaw, 10);
 
@@ -186,7 +192,7 @@ const updateXP = async (req, res) => {
       { where: { wallet_addr: walletAddress } }
     );
 
-    // 포인트 히스토리 테이블에 이번 클레임한 xpPoints 값 기록
+    // 포인트 히스토리 테이블에 이번 클레임한 xpPoints 값 기록 (project_id 추가)
     await UserPointsHistory.create({
       wallet_addr: walletAddress,
       date: moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss"),
@@ -194,6 +200,7 @@ const updateXP = async (req, res) => {
       activity: "Claim XP",
       xp_earned: xpPoints, // 이번에 클레임한 XP만 기록
       transaction_id: receipt.transactionHash,
+      project_id: projectId, // project_id를 기록하여 중복 클레임 방지
     });
 
     res.json({ success: true, transactionHash: receipt.transactionHash });
@@ -229,7 +236,12 @@ const updatePointHistory = async (req, res) => {
     activity,
     xpEarned,
     transactionId,
+    project_id, // project_id 추가
   } = req.body;
+
+  if (!project_id) {
+    return res.status(400).json({ message: "Project ID is required" });
+  }
 
   const t = await sequelize.transaction();
 
@@ -246,6 +258,7 @@ const updatePointHistory = async (req, res) => {
         activity: activity,
         xp_earned: xpEarned,
         transaction_id: transactionId,
+        project_id: project_id, // project_id 필드 추가
       },
       { transaction: t }
     );
@@ -258,6 +271,7 @@ const updatePointHistory = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 // XP 잔액 업데이트 함수
 const fetchAndUpdateXPBalance = async (walletAddress) => {
   try {
@@ -377,6 +391,25 @@ const getUserDealInterest = async (req, res) => {
   }
 };
 
+const checkAlreadyClaimed = async (req, res) => {
+  const { walletAddress, project_id } = req.body;
+
+  try {
+    const existingHistory = await UserPointsHistory.findOne({
+      where: { wallet_addr: walletAddress, project_id: project_id },
+    });
+
+    if (existingHistory) {
+      return res.json({ alreadyClaimed: true });
+    }
+
+    return res.json({ alreadyClaimed: false });
+  } catch (error) {
+    console.error("Error checking claim status:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -386,4 +419,5 @@ module.exports = {
   updatePointHistory,
   updateXPBalance,
   getUserDealInterest,
+  checkAlreadyClaimed,
 };
