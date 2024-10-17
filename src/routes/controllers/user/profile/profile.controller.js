@@ -11,16 +11,15 @@ const moment = require("moment-timezone");
 const { Web3 } = require("web3"); // require로 Web3를 가져옴
 const web3 = new Web3(
   new Web3.providers.HttpProvider(
-    "https://sepolia.infura.io/v3/b9b632f9e59c480fb0f81e446afdfb85"
+    "https://holesky.infura.io/v3/d6ecd425e13048f790b9697210cf1067"
   )
 );
 
-// 어드민 계정 설정
-const adminAddress = "0x403746C0D8e91aB0ad15008ab2488036dFb27d3F";
-const adminPrivateKey =
-  "0636a7f71d25cec64125b88e86474e54e566614e78823145dc7e865b9d53650e";
+// 환경 변수에서 어드민 계정 정보를 가져옵니다.
+const adminAddress = process.env.REACT_APP_ADMIN_WALLET_ADDRESS || "";
+const adminPrivateKey = process.env.REACT_APP_ADMIN_WALLET_PRIVATE_KEY || "";
 
-const contractAddress = "0x4C9B3dd7DC97db2E722b7A540e2eC40929426342";
+const contractAddress = "0x15e7a34b6a5aBf8b0aD4FcD85D873FD7e7163E97";
 // 컨트랙트 ABI 가져오기
 const contractABI = require(path.join(
   __dirname,
