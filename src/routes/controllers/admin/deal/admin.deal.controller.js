@@ -352,38 +352,68 @@ const transporter = nodemailer.createTransport({
 
 // 이메일 전송 함수
 const sendDealEmail = async (recipient, dealData) => {
+  const {
+    user_name,
+    deal_name,
+    final_allocation,
+    payment_due_date,
+    message,
+    title,
+  } = dealData;
+  console.log(deal_name);
+  console.log(
+    title === null
+      ? "null"
+      : title === undefined
+      ? "undefined"
+      : title === ""
+      ? "빈 문자열"
+      : title
+  );
   // HTML 템플릿 파일 읽기
   let emailTemplate = fs.readFileSync(emailTemplatePath, "utf8");
 
   // 템플릿 내의 플레이스홀더를 동적 데이터로 교체
   emailTemplate = emailTemplate
-    .replace("@@userName", dealData.user_name)
-    .replace("@@dealName", dealData.deal_name)
-    .replace("@@finalAllocation", dealData.final_allocation)
-    .replace("@@paymentDueDate", dealData.payment_due_date)
+    .replace("@@userName", user_name)
+    .replace("@@dealName", deal_name)
+    .replace("@@finalAllocation", final_allocation)
+    .replace("@@paymentDueDate", payment_due_date)
     .replace(
       "@@googleFormLink",
       dealData.google_form_link || "링크가 제공되지 않았습니다."
     );
+  const formattedMessage = message.replace(/\n/g, "<br>");
 
-  // 이메일 옵션 설정
+  emailTemplate = emailTemplate.replace("@@emailContent", formattedMessage);
+
   const mailOptions = {
     from: process.env.EMAIL_ID,
     to: recipient,
-    subject: `[Komm DAO] ${dealData.deal_name} 프로젝트 납입 안내`,
-    html: emailTemplate, // HTML 템플릿을 본문으로 설정
+    subject:
+      title && title.trim() !== ""
+        ? title
+        : `[Komm DAO] ${deal_name} 프로젝트 납입 안내`,
+    html: emailTemplate,
   };
 
   // 이메일 전송
   await transporter.sendMail(mailOptions);
 };
 exports.sendEmailNotifications = async (req, res) => {
-  const { deals } = req.body;
+  const { title, deals } = req.body;
   console.log(deals);
+  console.log(title);
   try {
     const emailPromises = deals.map(async (deal) => {
-      const { deal_name, user_name, final_allocation, payment_due_date } = deal;
-      console.log("111", user_name);
+      const {
+        deal_name,
+        user_name,
+        final_allocation,
+        payment_due_date,
+        message,
+      } = deal;
+      console.log("111", message);
       // 유저 이름을 기준으로 이메일 주소를 조회
       const userInfo = await UserInfo.findOne({ where: { user_name } });
       if (!userInfo) {
@@ -401,7 +431,10 @@ exports.sendEmailNotifications = async (req, res) => {
         final_allocation,
         payment_due_date,
         google_form_link: req.body.channel || "링크가 제공되지 않았습니다.",
+        message,
+        title,
       });
+      // await sendDealEmail(user_email, deals);
     });
 
     // 모든 이메일 전송이 완료될 때까지 기다림
