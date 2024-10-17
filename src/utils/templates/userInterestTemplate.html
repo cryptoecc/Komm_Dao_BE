@@ -3,53 +3,88 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-      }
-      .container {
-        padding: 20px;
-      }
-      .highlight {
-        font-weight: bold;
-        color: #4c4cff;
-      }
-    </style>
+    <title>Invitation Email</title>
   </head>
-  <body>
-    <div class="container">
-      <h2>안녕하세요 @@userName 님,</h2>
-      <p>
-        신청하신 <span class="highlight">@@dealName</span> 프로젝트에 대한
-        투자금 납입 안내드립니다.
-      </p>
-      <p>
-        하기 안내사항에 따라 투자금을 납입하여 주시되, 납입 기한을 반드시 지켜
-        주시기 바랍니다.
-      </p>
-      <p>
-        투자금 납입 완료 후, 트랜잭션 해시(TX hash) 링크를 아래 구글폼을 통해
-        제출해주십시오.
-      </p>
-      <p><b>구글폼 링크:</b> @@googleFormLink</p>
-      <hr />
-      <h3>□ 납입 화폐</h3>
-      <p>USDT-ERC20</p>
-      <h3>□ 납입 수량</h3>
-      <p><span class="highlight">@@finalAllocation</span> USDT</p>
-      <h3>□ 납입 기한</h3>
-      <p>@@paymentDueDate 자정까지</p>
-      <h3>□ 납입 주소</h3>
-      <p>0x2dB0544f170157077B60baB07f33b1E3d32750D6</p>
-      <hr />
-      <p>
-        ※ 회원의 네트워크 선택 또는 주소 기재 오류로 오입금이 발생하는 경우,
-        Komm DAO는 손해배상, 복구지원 등 책임을 부담하지 않습니다. 추가적인
-        문의사항 있으시거나 부득이하게 납입 기한까지 송금하지 못하시는 분은 메일
-        회신 혹은 디스코드 채널의 open-ticket으로 문의 부탁드립니다. 기한을
-        못지킬 시 불이익이 발생할 수 있습니다.
-      </p>
-      <p>감사합니다.</p>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    "
+  >
+    <div
+      style="
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+      "
+    >
+      <div style="text-align: left">
+        <img
+          src="https://res.cloudinary.com/dy24eddpx/image/upload/v1728641242/LOGO_Komm_DAO_3_xrqisa.png"
+          alt="Komm DAO Logo"
+          style="width: 100px; height: 100px"
+        />
+      </div>
+      <div
+        style="
+          text-align: left;
+          padding-left: 20px;
+          margin-top: 20px;
+          color: #000;
+        "
+      >
+        @@emailContent
+      </div>
+      <hr
+        style="
+          width: 100%;
+          margin: 20px auto;
+          border: none;
+          border-top: 1px solid #ddd;
+        "
+      />
+      <div
+        style="
+          display: flex;
+          margin-top: 30px;
+          font-size: 14px;
+          color: #777777;
+          justify-content: space-between;
+        "
+      >
+        <div style="text-align: left">
+          <img
+            src="https://res.cloudinary.com/dy24eddpx/image/upload/v1728641851/LOGO_KommDao_small_tukrdc.png"
+            style="width: 64px; height: 64px"
+          />
+          <h4 style="color: #101828; font-size: 16px; line-height: 30px">
+            KOMM DAO
+          </h4>
+          <p>The First Venture DAO in Korea</p>
+        </div>
+        <div style="margin-top: 15px">
+          <div style="display: flex; gap: 15px; margin-bottom: 60px">
+            <img
+              src="https://res.cloudinary.com/dy24eddpx/image/upload/v1728649218/Group_phyc3y.png"
+              style="width: 24px; height: 24px"
+            />
+            <img
+              src="https://res.cloudinary.com/dy24eddpx/image/upload/v1728649234/discord_agpvk0.png"
+              style="width: 24px; height: 24px"
+            />
+            <img
+              src="https://res.cloudinary.com/dy24eddpx/image/upload/v1728649244/Vector_rfojzu.png"
+              style="width: 24px; height: 24px"
+            />
+          </div>
+          <p>contact@kommdao.com</p>
+        </div>
+      </div>
     </div>
   </body>
 </html>
