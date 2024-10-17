@@ -115,8 +115,8 @@ const updateUserInterest = async (req, res) => {
         },
         defaults: {
           user_interest: intAmount, // 처음 추가 시 바로 해당 값을 설정
-          create_date: new Date().toISOString().split("T")[0], // create_date를 현재 날짜로 설정
-          update_date: new Date().toISOString().split("T")[0], // update_date를 현재 날짜로 설정
+          create_date: new Date(), // create_date를 현재 날짜로 설정
+          update_date: new Date(), // update_date를 현재 날짜로 설정
         },
       }
     );
@@ -126,7 +126,7 @@ const updateUserInterest = async (req, res) => {
       await USER_DEAL_INTEREST.update(
         {
           user_interest: intAmount, // 기존 값에 더하지 않고, 최신 값으로 덮어씌움
-          update_date: new Date().toISOString().split("T")[0], // update_date를 현재 날짜로 설정
+          update_date: new Date(), // update_date를 현재 날짜로 설정
         },
         {
           where: {
