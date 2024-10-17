@@ -106,7 +106,7 @@ const updateUserInterest = async (req, res) => {
       return res.status(400).json({ message: "Interest amount out of range" });
     }
 
-    // Calculate the new total interest for the deal
+    // Find or create the user interest record
     const [userInterestRecord, created] = await USER_DEAL_INTEREST.findOrCreate(
       {
         where: {
@@ -114,7 +114,7 @@ const updateUserInterest = async (req, res) => {
           user_id: userId,
         },
         defaults: {
-          user_interest: intAmount,
+          user_interest: intAmount, // 처음 추가 시 바로 해당 값을 설정
           create_date: new Date().toISOString().split("T")[0], // create_date를 현재 날짜로 설정
           update_date: new Date().toISOString().split("T")[0], // update_date를 현재 날짜로 설정
         },
@@ -122,10 +122,10 @@ const updateUserInterest = async (req, res) => {
     );
 
     if (!created) {
-      // If the record already exists, update the user_interest and the dates
+      // If the record already exists, update the user_interest with the new intAmount
       await USER_DEAL_INTEREST.update(
         {
-          user_interest: userInterestRecord.user_interest + intAmount,
+          user_interest: intAmount, // 기존 값에 더하지 않고, 최신 값으로 덮어씌움
           update_date: new Date().toISOString().split("T")[0], // update_date를 현재 날짜로 설정
         },
         {
@@ -137,12 +137,14 @@ const updateUserInterest = async (req, res) => {
       );
     }
 
-    // Update the total_interest in DEAL_INFO
-    const dealUpdate = await DEAL_INFO.findOne({ where: { deal_id: dealId } });
-    const newTotalInterest = (dealUpdate.total_interest || 0) + intAmount;
+    // Calculate the total interest by summing all user interests for this deal
+    const totalInterest = await USER_DEAL_INTEREST.sum("user_interest", {
+      where: { deal_id: dealId },
+    });
 
+    // Update the total_interest in DEAL_INFO with the summed user_interest values
     await DEAL_INFO.update(
-      { total_interest: newTotalInterest },
+      { total_interest: totalInterest },
       { where: { deal_id: dealId } }
     );
 

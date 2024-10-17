@@ -130,3 +130,148 @@ exports.sendInviteEmails = async (req, res) => {
       .json({ success: false, message: "Failed to send invitations" });
   }
 };
+
+// Backend: 이메일 중복 체크 API
+exports.checkDuplicateEmails = async (req, res) => {
+  const { emails } = req.body; // 초대하려는 이메일 목록을 받습니다.
+
+  try {
+    // UserInfo 테이블에서 이메일이 존재하고 status가 APPLIED인 항목을 찾습니다.
+    const existingUsers = await UserInfo.findAll({
+      where: {
+        email_addr: emails,
+        appr_status: "APPLIED",
+      },
+      attributes: ["email_addr"], // 이메일만 반환
+    });
+
+    const existingEmails = existingUsers.map((user) => user.email_addr);
+
+    res.status(200).json({ existingEmails });
+  } catch (error) {
+    console.error("Error checking duplicate emails:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getAppliedInviteCount = async (req, res) => {
+  const { cont_id, user_id } = req.body; // cont_id와 user_id를 요청 본문에서 받음
+
+  try {
+    // cont_id와 user_id에 해당하는 APPLIED 상태의 초대 정보를 가져옴
+    const appliedInvitesCount = await UserInviteContribution.count({
+      where: {
+        cont_id,
+        user_id,
+        status: "APPLIED", // APPLIED 상태인 초대만 필터링
+      },
+    });
+
+    // APPLIED 상태의 초대 개수 반환
+    res.json({ appliedInvitesCount });
+  } catch (error) {
+    console.error("Error fetching applied invite count:", error);
+    res.status(500).json({ message: "Failed to fetch applied invite count" });
+  }
+};
+
+exports.getUserXpPoint = async (req, res) => {
+  const { user_id, cont_id } = req.body;
+
+  console.log(cont_id);
+
+  try {
+    const userContribution = await UserContribution.findOne({
+      where: {
+        cont_id,
+        user_id,
+      },
+      attributes: ["cont_xp"],
+    });
+
+    if (!userContribution) {
+      return res
+        .status(404)
+        .json({ message: "No XP points found for this user" });
+    }
+
+    res.status(200).json({ cont_xp: userContribution.cont_xp });
+  } catch (error) {
+    console.error("Error fetching get Xp", error);
+    res.status(500).json({ message: "Failed to fetch get Xp" });
+  }
+};
+
+exports.updateXpPoint = async (req, res) => {
+  const { total_xp, user_id, cont_id } = req.body;
+
+  try {
+    // user_id와 cont_id를 기준으로 UserContribution 데이터를 찾음
+    const userContribution = await UserContribution.findOne({
+      where: { user_id, cont_id },
+    });
+
+    if (!userContribution) {
+      return res.status(404).json({ message: "UserContribution not found" });
+    }
+
+    // cont_xp를 0으로 초기화하고, total_xp에 받은 cont_xp 값을 더함
+    userContribution.cont_xp = 0;
+    userContribution.total_xp = (userContribution.total_xp || 0) + total_xp;
+
+    // claim_yn이 "Y"일 경우 "N"으로 업데이트
+    if (userContribution.claim_yn === "Y") {
+      userContribution.claim_yn = "N";
+    }
+
+    // 데이터 저장
+    await userContribution.save();
+
+    res.status(200).json({ message: "XP updated successfully" });
+  } catch (error) {
+    console.error("Error updating XP:", error);
+    res.status(500).json({ message: "Failed to update XP" });
+  }
+};
+
+exports.checkUserConfirm = async (req, res) => {
+  const { cont_id, user_id } = req.body;
+
+  try {
+    // ContributionMissions 테이블에서 cont_id로 ms_id 가져오기
+    const contributionMission = await ContributionMissions.findOne({
+      where: { cont_id },
+      attributes: ["ms_id"], // ms_id만 가져오기
+    });
+
+    if (!contributionMission) {
+      return res
+        .status(404)
+        .json({ message: "No missions found for this contribution." });
+    }
+
+    const ms_id = contributionMission.ms_id;
+
+    // UserContribution 테이블에서 cont_id, ms_id, user_id로 데이터를 조회하여 claim_yn 가져오기
+    const userContribution = await UserContribution.findOne({
+      where: {
+        cont_id,
+        ms_id,
+        user_id,
+      },
+      attributes: ["claim_yn"], // claim_yn만 가져오기
+    });
+
+    if (!userContribution) {
+      return res
+        .status(404)
+        .json({ message: "No user contribution found for this mission." });
+    }
+
+    // claim_yn 값을 프론트로 응답
+    return res.status(200).json({ claim_yn: userContribution.claim_yn });
+  } catch (error) {
+    console.error("Error checking user confirmation:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};

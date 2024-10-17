@@ -14,7 +14,7 @@ exports.sendEmail = async (req, res) => {
 
   const emailTemplatePath = path.join(
     __dirname,
-    "../../../utils/templates/emailTemplate.html"
+    "../../../utils/templates/pincodeTemplate.html"
   );
 
   try {
@@ -22,7 +22,7 @@ exports.sendEmail = async (req, res) => {
     let emailTemplate = fs.readFileSync(emailTemplatePath, "utf8");
 
     // 템플릿에 동적 데이터 삽입
-    emailTemplate = emailTemplate.replace("@@pin", pin);
+    emailTemplate = emailTemplate.replace("{{PINCODE}}", pin);
 
     // nodemailer transporter 생성
     const transporter = nodemailer.createTransport({
@@ -37,7 +37,7 @@ exports.sendEmail = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_ID,
       to: email,
-      subject: "Welcome to Komm DAO",
+      subject: "Welcome to Komm DAO. Verify Your Email Address",
       html: emailTemplate, // HTML 본문 설정
     };
 
