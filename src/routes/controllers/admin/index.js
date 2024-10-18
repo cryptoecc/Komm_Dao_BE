@@ -100,5 +100,9 @@ router.post("/deal-interestMsg", adminDealController.sendEmailNotifications);
 router.put("/update-payment-period", adminDealController.updatePaymentPeriod);
 router.put("/update-verify-status", adminDealController.verifyPaymentStatus);
 router.put("/update-complete-status", adminDealController.updateCompleteStatus);
+router.put(
+  "/update-deal/:dealId/:userId",
+  adminDealController.updateDealInterest
+);
 
 module.exports = router;

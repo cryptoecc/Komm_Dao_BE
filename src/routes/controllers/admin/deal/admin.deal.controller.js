@@ -666,3 +666,37 @@ exports.updateCompleteStatus = async (req, res) => {
     });
   }
 };
+
+exports.updateDealInterest = async (req, res) => {
+  const { dealId, userId } = req.params;
+  const updatedData = req.body;
+  const { user_interest, user_payment_amount } = req.body; // 필요한 필드만 추출
+  console.log({ user_interest, user_payment_amount });
+
+  try {
+    // 특정 dealId 및 userId의 데이터를 찾아서 업데이트
+    const dealInterest = await UserDealInterest.findOne({
+      where: {
+        deal_id: dealId,
+        user_id: userId,
+      },
+    });
+
+    console.log(dealInterest);
+
+    if (!dealInterest) {
+      return res.status(404).json({ message: "DealInterest not found" });
+    }
+
+    // 업데이트할 데이터를 덮어씌움
+    await dealInterest.update({
+      user_interest,
+      payment_amount: user_payment_amount, // DB 컬럼명에 맞게 업데이트
+    });
+
+    res.status(200).json({ message: "DealInterest updated successfully" });
+  } catch (error) {
+    console.error("Error updating DealInterest:", error);
+    res.status(500).json({ message: "Error updating DealInterest" });
+  }
+};
