@@ -6,6 +6,8 @@ const {
   UserWatchlist,
 } = require("../../../../../models/index");
 const { Op } = require("sequelize");
+const xlsx = require("xlsx");
+const path = require("path");
 
 exports.mainProjectList = async (req, res) => {
   try {
@@ -328,4 +330,158 @@ exports.projectUpdate = async (req, res) => {
     console.error("Error updating project:", error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+// 엑셀 파일에서 투자자 데이터를 로드하는 함수
+const loadInvestorData = () => {
+  const filePath = path.join(
+    __dirname,
+    "../../../../utils/xlsx/investor_tiers.xlsx"
+  ); // 엑셀 파일 경로
+
+  console.log(filePath);
+  const workbook = xlsx.readFile(filePath);
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+  const data = xlsx.utils.sheet_to_json(sheet);
+
+  const tier1 = [],
+    tier2 = [],
+    tier3 = [];
+
+  data.forEach((row) => {
+    if (row["1티어"]) tier1.push(row["1티어"].trim());
+    if (row["2티어"]) tier2.push(row["2티어"].trim());
+    if (row["3티어"]) tier3.push(row["3티어"].trim());
+  });
+
+  return { tier1, tier2, tier3 };
+};
+
+// 투자자 품질 점수 계산 함수
+const calculateInvestorQuality = (project_investors, tier1, tier2, tier3) => {
+  const investors = project_investors.split(",").map((i) => i.trim());
+  let investorQualityScore = 1; // 기본 점수는 1점 (3티어)
+
+  investors.forEach((investor) => {
+    if (tier1.includes(investor)) {
+      investorQualityScore = Math.max(investorQualityScore, 3); // 1티어 투자자는 3점
+    } else if (tier2.includes(investor)) {
+      investorQualityScore = Math.max(investorQualityScore, 2); // 2티어 투자자는 2점
+    }
+  });
+
+  return investorQualityScore * 0.25; // 25% 가중치 적용
+};
+
+// 기타 점수 계산 함수들
+const calculateTwitterScore = (followers) => {
+  if (followers >= 100000) return 3 * 0.1;
+  else if (followers >= 50000) return 2 * 0.1;
+  else return 1 * 0.1;
+};
+
+const calculateDiscordScore = (members) => {
+  if (members >= 50000) return 3 * 0.05;
+  else if (members >= 20000) return 2 * 0.05;
+  else return 1 * 0.05;
+};
+
+const calculateGithubStarsScore = (stars) => {
+  if (stars >= 300) return 3 * 0.05;
+  else if (stars >= 100) return 2 * 0.05;
+  else return 1 * 0.05;
+};
+
+const calculateWeeklyCommitsScore = (commits) => {
+  if (commits >= 30) return 3 * 0.05;
+  else if (commits >= 10) return 2 * 0.05;
+  else return 1 * 0.05;
+};
+
+// null 값 체크 및 평균 점수 계산 함수
+const calculateFinalGrade = async (project, tier1, tier2, tier3) => {
+  // 각 항목의 값을 체크
+  const scores = [];
+
+  // null 체크와 점수 계산을 각 항목별로 진행
+  if (project.x_followers !== null) {
+    const twitterScore = calculateTwitterScore(project.x_followers); // 점수 계산 (1~3점)
+    scores.push(twitterScore / 0.1); // 원래 점수로 환산 후 1~3점 형태로 push
+  }
+
+  if (project.discord_members !== null) {
+    const discordScore = calculateDiscordScore(project.discord_members);
+    scores.push(discordScore / 0.05);
+  }
+
+  if (project.github_stars !== null) {
+    const githubStarsScore = calculateGithubStarsScore(project.github_stars);
+    scores.push(githubStarsScore / 0.05);
+  }
+
+  if (project.github_wkly_comm !== null) {
+    const weeklyCommitsScore = calculateWeeklyCommitsScore(
+      project.github_wkly_comm
+    );
+    scores.push(weeklyCommitsScore / 0.05);
+  }
+
+  if (project.raising_amount !== null) {
+    const raisingAmountScore = calculateRaisingAmountScore(
+      project.raising_amount
+    );
+    scores.push(raisingAmountScore / 0.05);
+  }
+
+  if (project.investors !== null) {
+    const investorQualityScore = calculateInvestorQuality(
+      project.investors,
+      tier1,
+      tier2,
+      tier3
+    );
+    scores.push(investorQualityScore / 0.25);
+  }
+
+  // null인 항목의 개수 확인
+  const nullCount = 6 - scores.length; // 6개 항목 중 몇 개가 null인지 계산
+
+  if (nullCount >= 3) {
+    // 3개 이상의 항목이 null인 경우 'N/A'로 설정
+    await ProjectInfo.update(
+      { adm_final_grade: "N/A" },
+      { where: { pjt_id: project.pjt_id } }
+    );
+    console.log(`프로젝트 ${project.pjt_id}의 최종 등급: N/A (데이터 부족)`);
+  } else {
+    // 2개 이하의 항목이 null인 경우, 평균 점수 계산
+    const totalScore = scores.reduce((acc, score) => acc + score, 0);
+    const averageScore = totalScore / scores.length; // 평균 점수
+
+    // 계산된 평균 점수를 업데이트
+    await ProjectInfo.update(
+      { adm_final_grade: averageScore.toFixed(2) },
+      { where: { pjt_id: project.pjt_id } }
+    );
+    console.log(
+      `프로젝트 ${project.pjt_id}의 최종 점수: ${averageScore.toFixed(2)}`
+    );
+  }
+};
+
+// 모든 프로젝트의 점수를 업데이트하는 함수
+const updateAllProjects = async () => {
+  // 엑셀 파일에서 투자자 데이터 로드
+  const { tier1, tier2, tier3 } = loadInvestorData();
+
+  // 모든 프로젝트 데이터 가져오기
+  const projects = await ProjectInfo.findAll();
+
+  // 각 프로젝트에 대해 점수를 계산하고 업데이트
+  for (const project of projects) {
+    await calculateFinalGrade(project, tier1, tier2, tier3);
+  }
+
+  console.log("모든 프로젝트 점수 업데이트 완료.");
 };

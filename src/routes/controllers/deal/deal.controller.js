@@ -4,6 +4,7 @@ const {
   DEAL_INFO,
   USER_DEAL_INTEREST,
   USER_INFO,
+  ProjectInfo,
 } = require("../../../../models"); // Adjust the path if necessary
 
 // Function to get all deals
@@ -13,7 +14,7 @@ const getDeals = async (req, res) => {
     const deals = await DEAL_INFO.findAll();
 
     // Log the raw deals data
-    console.log("Raw deals data:", deals);
+    // console.log("Raw deals data:", deals);
 
     // Transform the deals into the desired format, including create_date, min_interest, and max_interest
     const transformedDeals = deals.map((deal) => ({
@@ -56,6 +57,11 @@ const getDealById = async (req, res) => {
       return res.status(404).json({ message: "Deal not found" });
     }
 
+    // PROJECT_INFO 테이블에서 pjt_id로 추가 정보를 가져오기
+    const projectInfo = await ProjectInfo.findOne({
+      where: { pjt_id: deal.pjt_id }, // DEAL_INFO와 연결된 pjt_id 사용
+    });
+
     // 응답할 데이터 형태로 변환, including create_date, min_interest, and max_interest
     const transformedDeal = {
       deal_id: deal.deal_id,
@@ -71,6 +77,9 @@ const getDealById = async (req, res) => {
       min_interest: deal.min_interest || 0, // min_interest 추가
       max_interest: deal.max_interest || 0, // max_interest 추가
       total_interest: deal.total_interest || 0, // total_interest 추가
+      x_link: projectInfo ? projectInfo.x_link : null, // 추가된 정보
+      discord_link: projectInfo ? projectInfo.discord_link : null, // 추가된 정보
+      website: projectInfo ? projectInfo.website : null, // 추가된 정보
     };
 
     res.json(transformedDeal); // 변환된 데이터를 JSON 형식으로 응답

@@ -35,7 +35,8 @@
     "redis": "^4.7.0",
     "sequelize": "^6.37.3",
     "sequelize-auto": "^0.8.8",
-    "web3": "^4.11.0"
+    "web3": "^4.11.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
