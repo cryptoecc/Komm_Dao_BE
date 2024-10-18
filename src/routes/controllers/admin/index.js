@@ -47,6 +47,7 @@ router.get("/contract-query/:name", adminContractController.queryContract);
 
 // Discover
 router.get("/project-list", adminDiscoverController.projectList);
+router.get("/main-project-list", adminDiscoverController.mainProjectList);
 router.post("/add-project", adminDiscoverController.addProject);
 router.post("/delete-projects", adminDiscoverController.deleteProjects);
 router.get("/applied-project", adminDiscoverController.appliedProject);

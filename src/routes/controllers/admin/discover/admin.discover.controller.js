@@ -7,7 +7,7 @@ const {
 } = require("../../../../../models/index");
 const { Op } = require("sequelize");
 
-exports.projectList = async (req, res) => {
+exports.mainProjectList = async (req, res) => {
   try {
     const projects = await ProjectInfo.findAll({
       attributes: [
@@ -46,6 +46,78 @@ exports.projectList = async (req, res) => {
     }));
 
     res.json(formattedProjects);
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.projectList = async (req, res) => {
+  // const { searchTerm = "", page = 1, limit = 20 } = req.query;
+  // const offset = (page - 1) * limit;
+
+  try {
+    const searchTerm = req.query.searchTerm || "";
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const offset = (page - 1) * limit;
+
+    // 검색어 필터링 조건 추가 (프로젝트 이름이나 카테고리 검색)
+    const whereClause = {
+      [Op.or]: [
+        { pjt_name: { [Op.like]: `%${searchTerm}%` } },
+        { category: { [Op.like]: `%${searchTerm}%` } },
+      ],
+    };
+
+    // 데이터와 전체 개수 가져오기 (페이지네이션 적용)
+    const { rows: projects, count } = await ProjectInfo.findAndCountAll({
+      where: whereClause, // 검색어 필터링 조건
+      attributes: [
+        "pjt_id",
+        "pjt_name",
+        "website",
+        "category",
+        "x_link",
+        "x_followers",
+        "discord_link",
+        "discord_members",
+        "linkedIn_link",
+        "github_link",
+        "github_stars",
+        "raising_amount",
+        "valuation",
+        "investors",
+        "pjt_grade",
+        "pjt_summary",
+        "pjt_details",
+        "adm_trend",
+        "adm_expertise",
+        "adm_final_grade",
+        "update_date",
+        "apply_yn",
+      ],
+      order: [["update_date", "DESC"]], // 최신 업데이트 순으로 정렬
+      offset, // 페이지네이션을 위한 시작점
+      limit, // 페이지 당 보여줄 개수
+    });
+
+    // 날짜 형식을 가공
+    const formattedProjects = projects.map((project) => ({
+      ...project.toJSON(),
+      update_date: project.update_date
+        ? project.update_date.toISOString().split("T")[0]
+        : null,
+    }));
+
+    // 총 페이지 수 계산
+    const totalPages = Math.ceil(count / limit);
+
+    res.json({
+      data: formattedProjects,
+      totalPages,
+      currentPage: parseInt(page, 10),
+    });
   } catch (error) {
     console.error("Error fetching projects:", error);
     res.status(500).json({ message: "Internal server error" });
