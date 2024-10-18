@@ -8,6 +8,7 @@ const {
 const { Op } = require("sequelize");
 const xlsx = require("xlsx");
 const path = require("path");
+const cron = require("node-cron");
 
 exports.mainProjectList = async (req, res) => {
   try {
@@ -336,7 +337,7 @@ exports.projectUpdate = async (req, res) => {
 const loadInvestorData = () => {
   const filePath = path.join(
     __dirname,
-    "../../../../utils/xlsx/investor_tiers.xlsx"
+    "../../../../utils/xlsx/Crypto_VCs_Tier.xlsx"
   ); // 엑셀 파일 경로
 
   console.log(filePath);
@@ -399,15 +400,20 @@ const calculateWeeklyCommitsScore = (commits) => {
   else return 1 * 0.05;
 };
 
+const calculateRaisingAmountScore = (raisingAmount) => {
+  if (raisingAmount >= 1000000) return 3 * 0.05; // 예시: 100만 이상이면 3점
+  else if (raisingAmount >= 500000) return 2 * 0.05; // 예시: 50만 이상이면 2점
+  else return 1 * 0.05; // 나머지는 1점
+};
+
 // null 값 체크 및 평균 점수 계산 함수
 const calculateFinalGrade = async (project, tier1, tier2, tier3) => {
-  // 각 항목의 값을 체크
   const scores = [];
 
-  // null 체크와 점수 계산을 각 항목별로 진행
+  // 자동 계산 항목
   if (project.x_followers !== null) {
-    const twitterScore = calculateTwitterScore(project.x_followers); // 점수 계산 (1~3점)
-    scores.push(twitterScore / 0.1); // 원래 점수로 환산 후 1~3점 형태로 push
+    const twitterScore = calculateTwitterScore(project.x_followers);
+    scores.push(twitterScore / 0.1);
   }
 
   if (project.discord_members !== null) {
@@ -444,22 +450,35 @@ const calculateFinalGrade = async (project, tier1, tier2, tier3) => {
     scores.push(investorQualityScore / 0.25);
   }
 
-  // null인 항목의 개수 확인
-  const nullCount = 6 - scores.length; // 6개 항목 중 몇 개가 null인지 계산
+  // 수동 업데이트 항목
+  if (project.adm_trend !== null && project.adm_trend !== "") {
+    scores.push(parseFloat(project.adm_trend)); // 수동 항목은 그대로 점수로 반영
+  }
+
+  if (project.adm_expertise !== null && project.adm_expertise !== "") {
+    scores.push(parseFloat(project.adm_expertise));
+  }
+
+  if (project.valuation !== null && project.valuation !== "") {
+    scores.push(parseFloat(project.valuation));
+  }
+
+  console.log(`Project ${project.pjt_id} scores:`, scores); // 점수 배열 출력
+
+  const nullCount = 9 - scores.length; // 9개 항목 중 null 값 개수 확인
 
   if (nullCount >= 3) {
-    // 3개 이상의 항목이 null인 경우 'N/A'로 설정
+    // 3개 이상 항목이 null이면 'N/A'로 설정
     await ProjectInfo.update(
       { adm_final_grade: "N/A" },
       { where: { pjt_id: project.pjt_id } }
     );
     console.log(`프로젝트 ${project.pjt_id}의 최종 등급: N/A (데이터 부족)`);
   } else {
-    // 2개 이하의 항목이 null인 경우, 평균 점수 계산
+    // 평균 점수 계산
     const totalScore = scores.reduce((acc, score) => acc + score, 0);
-    const averageScore = totalScore / scores.length; // 평균 점수
+    const averageScore = totalScore / scores.length;
 
-    // 계산된 평균 점수를 업데이트
     await ProjectInfo.update(
       { adm_final_grade: averageScore.toFixed(2) },
       { where: { pjt_id: project.pjt_id } }
@@ -485,3 +504,22 @@ const updateAllProjects = async () => {
 
   console.log("모든 프로젝트 점수 업데이트 완료.");
 };
+
+// 매일 자정 10분에 실행되도록 설정
+cron.schedule(
+  "10 0 * * *",
+  async () => {
+    console.log("프로젝트 점수 업데이트 작업 시작...");
+    try {
+      await updateAllProjects();
+      console.log("모든 프로젝트 점수 업데이트 완료.");
+    } catch (error) {
+      console.error("프로젝트 점수 업데이트 중 오류 발생:", error);
+    }
+  },
+  {
+    timezone: "Asia/Seoul", // 타임존 설정 (한국 시간 기준)
+  }
+);
+
+console.log("스케줄러가 설정되었습니다.");
