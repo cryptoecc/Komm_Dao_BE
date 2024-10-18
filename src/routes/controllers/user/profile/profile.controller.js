@@ -47,11 +47,32 @@ const getProfile = async (req, res) => {
       raw: true,
     });
 
-    // 사용자가 클레임한 프로젝트 ID의 개수 조회
+    // 사용자가 클레임한 프로젝트 ID의 개수 조회 (participation이 Discover인 경우만)
     const claimedProjectsCount = await UserPointsHistory.count({
-      where: { wallet_addr: walletAddress },
+      where: {
+        wallet_addr: walletAddress,
+        participation: "Discover", // participation 조건 추가
+      },
       distinct: true,
       col: "project_id", // distinct한 project_id의 개수를 구함
+    });
+
+    // 사용자가 클레임한 프로젝트 ID의 개수 조회 (participation이 Discover인 경우만)
+    const claimedProjectsContributionCount = await UserPointsHistory.count({
+      where: {
+        wallet_addr: walletAddress,
+        participation: "Contribution", // participation 조건 추가
+      },
+      distinct: true,
+      col: "project_id", // distinct한 project_id의 개수를 구함
+    });
+
+    const claimedProjectDealCount = await UserDealInterest.count({
+      where: {
+        user_id: user.user_id, // user_id 기준으로 검색
+      },
+      distinct: true,
+      col: "deal_id", // 중복을 제거할 컬럼 (프로젝트 ID)
     });
 
     // 프로필 데이터 생성
@@ -67,6 +88,8 @@ const getProfile = async (req, res) => {
       xp: user.cur_xp || 0, // 프론트에서 'xp'로 사용하도록 데이터를 변환
       pointHistory: pointHistory || [],
       claimedProjectsCount: claimedProjectsCount || 0, // 클레임된 프로젝트 개수 추가
+      claimedContributionCount: claimedProjectsContributionCount || 0,
+      claimedDealCount: claimedProjectDealCount || 0,
     };
 
     // 사용자 정보와 포인트 히스토리를 함께 반환
@@ -524,6 +547,56 @@ const checkAlreadyClaimed = async (req, res) => {
   }
 };
 
+// 백엔드: 참여자 목록을 pjt_id로 가져오기, 그리고 user_image_link를 UserInfo에서 조회
+const getProjectParticipants = async (req, res) => {
+  const { pjtId } = req.params;
+  console.log(pjtId);
+
+  try {
+    // UserPointsHistory에서 wallet_addr 가져오기
+    const participants = await UserPointsHistory.findAll({
+      where: {
+        project_id: pjtId,
+        participation: "Discover",
+      },
+      attributes: ["wallet_addr"], // wallet_addr만 선택
+    });
+
+    // wallet_addr 목록을 추출
+    const walletAddrs = participants.map(
+      (participant) => participant.wallet_addr
+    );
+
+    // UserInfo에서 해당 wallet_addr에 대한 user_image_link 조회
+    const userImages = await UserInfo.findAll({
+      where: {
+        wallet_addr: walletAddrs, // wallet_addr 리스트에 포함된 것만 조회
+      },
+      attributes: ["wallet_addr", "user_image_link"], // wallet_addr와 user_image_link 선택
+    });
+
+    console.log(userImages);
+
+    // 결과를 wallet_addr로 매칭하여 응답
+    const result = participants.map((participant) => {
+      const userImage = userImages.find(
+        (user) => user.wallet_addr === participant.wallet_addr
+      );
+      return {
+        wallet_addr: participant.wallet_addr,
+        user_image_link: userImage ? userImage.user_image_link : null, // user_image_link가 없으면 null
+      };
+    });
+
+    console.log(result);
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching participants with user images:", error);
+    res.status(500).json({ error: "Failed to fetch participants" });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -534,4 +607,5 @@ module.exports = {
   updatePointHistory,
   getUserDealInterest,
   checkAlreadyClaimed,
+  getProjectParticipants,
 };
