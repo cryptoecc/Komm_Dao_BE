@@ -529,11 +529,15 @@ const getUserDealInterest = async (req, res) => {
 };
 
 const checkAlreadyClaimed = async (req, res) => {
-  const { walletAddress, project_id } = req.body;
+  const { walletAddress, project_id, participation } = req.body;
 
   try {
     const existingHistory = await UserPointsHistory.findOne({
-      where: { wallet_addr: walletAddress, project_id: project_id },
+      where: {
+        wallet_addr: walletAddress,
+        project_id: project_id,
+        participation,
+      },
     });
 
     if (existingHistory) {
