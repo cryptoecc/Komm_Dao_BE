@@ -360,16 +360,7 @@ const sendDealEmail = async (recipient, dealData) => {
     message,
     title,
   } = dealData;
-  console.log(deal_name);
-  console.log(
-    title === null
-      ? "null"
-      : title === undefined
-      ? "undefined"
-      : title === ""
-      ? "빈 문자열"
-      : title
-  );
+
   // HTML 템플릿 파일 읽기
   let emailTemplate = fs.readFileSync(emailTemplatePath, "utf8");
 
@@ -400,10 +391,23 @@ const sendDealEmail = async (recipient, dealData) => {
   // 이메일 전송
   await transporter.sendMail(mailOptions);
 };
+
+// 템플릿을 실제 데이터로 치환하는 함수
+function replaceTemplate(message, data) {
+  return message
+    .replace("{user_name}", data.user_name)
+    .replace("{deal_name}", data.deal_name)
+    .replace("{user_final_allocation}", data.final_allocation)
+    .replace("{paymentDueDate}", data.payment_due_date)
+    .replace("{modalChannel}", data.channel);
+}
+
 exports.sendEmailNotifications = async (req, res) => {
-  const { title, deals } = req.body;
+  const { title, deals, content, channel } = req.body;
   console.log(deals);
   console.log(title);
+  console.log(content);
+  console.log(channel);
   try {
     const emailPromises = deals.map(async (deal) => {
       const {
@@ -413,7 +417,7 @@ exports.sendEmailNotifications = async (req, res) => {
         payment_due_date,
         message,
       } = deal;
-      console.log("111", message);
+
       // 유저 이름을 기준으로 이메일 주소를 조회
       const userInfo = await UserInfo.findOne({ where: { user_name } });
       if (!userInfo) {
@@ -424,22 +428,33 @@ exports.sendEmailNotifications = async (req, res) => {
       const user_email = userInfo.email_addr;
       console.log(`Sending email to: ${user_email}`);
 
+      const personalizedMessage = replaceTemplate(message, {
+        user_name,
+        deal_name,
+        final_allocation,
+        payment_due_date,
+        channel, // modalChannel이 백엔드에선 channel로 들어옴
+      });
+
+      // await sendDealEmail(user_email, deals);
+      console.log(`Sending email to: ${user_email}`);
+      console.log("Personalized Message:", personalizedMessage);
+
       // 이메일 전송
       await sendDealEmail(user_email, {
         user_name,
         deal_name,
         final_allocation,
         payment_due_date,
-        google_form_link: req.body.channel || "링크가 제공되지 않았습니다.",
-        message,
+        google_form_link: channel || "링크가 제공되지 않았습니다.",
+        message: personalizedMessage,
         title,
       });
-      // await sendDealEmail(user_email, deals);
     });
 
     // 모든 이메일 전송이 완료될 때까지 기다림
     await Promise.all(emailPromises);
-
+    console.log("sent success");
     res
       .status(200)
       .send({ success: true, message: "Emails sent successfully." });

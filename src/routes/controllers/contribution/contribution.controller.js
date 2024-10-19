@@ -244,6 +244,8 @@ exports.checkUserConfirm = async (req, res) => {
       attributes: ["ms_id"], // ms_id만 가져오기
     });
 
+    console.log(contributionMission);
+
     if (!contributionMission) {
       return res
         .status(404)
@@ -251,6 +253,7 @@ exports.checkUserConfirm = async (req, res) => {
     }
 
     const ms_id = contributionMission.ms_id;
+    console.log(ms_id);
 
     // UserContribution 테이블에서 cont_id, ms_id, user_id로 데이터를 조회하여 claim_yn 가져오기
     const userContribution = await UserContribution.findOne({
@@ -262,7 +265,9 @@ exports.checkUserConfirm = async (req, res) => {
       attributes: ["claim_yn"], // claim_yn만 가져오기
     });
 
-    if (!userContribution) {
+    console.log("asd", userContribution);
+
+    if (!userContribution || userContribution == null) {
       return res
         .status(404)
         .json({ message: "No user contribution found for this mission." });

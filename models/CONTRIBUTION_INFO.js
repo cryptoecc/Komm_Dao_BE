@@ -48,7 +48,7 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
       },
       cont_desc: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       start_date: {
