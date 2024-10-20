@@ -6,8 +6,10 @@ const dealRouter = require("./controllers/deal/index");
 const contributionRouter = require("./controllers/contribution/index");
 const adminRouter = require("./controllers/admin/index");
 const metadataRouter = require("./controllers/metadata/index");
+const projectRouter = require("./controllers/project/index");
 
 router.use("/api/user", userRouter);
+router.use("/api/project", projectRouter);
 router.use("/api/wallet", walletRouter);
 router.use("/api/deals", dealRouter);
 router.use("/api/contribution", contributionRouter);
