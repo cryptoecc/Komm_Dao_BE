@@ -71,6 +71,7 @@ const UserInviteContribution = require("./USER_INVITE_CONTRIBUTION")(
 const UserContribution = require("./USER_CONTRIBUTION")(sequelize, DataTypes);
 const UserPointsHistory = require("./USER_POINTSHISTORY")(sequelize, DataTypes); // 추가된 부분
 const UserWatchlist = require("./USER_WATCHLIST")(sequelize, DataTypes);
+const UserRating = require("./USER_RATING")(sequelize, DataTypes);
 
 // 모델 등록
 db.UserInfo = UserInfo;
@@ -91,6 +92,7 @@ db.UserPointsHistory = UserPointsHistory;
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 db.UserWatchlist = UserWatchlist;
+db.UserRating = UserRating;
 
 // 모델 간의 관계 설정
 Object.keys(db).forEach((modelName) => {
