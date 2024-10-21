@@ -323,6 +323,9 @@ exports.projectUpdate = async (req, res) => {
         );
       }
 
+      await updateAllProjects();
+      console.log("Process update grade!");
+
       res.status(200).json({ message: "Project updated successfully" });
     } else {
       res.status(404).json({ message: "Project not found" });
@@ -490,7 +493,7 @@ const calculateFinalGrade = async (project, tier1, tier2, tier3) => {
 };
 
 // 모든 프로젝트의 점수를 업데이트하는 함수
-const updateAllProjects = async () => {
+export const updateAllProjects = async () => {
   // 엑셀 파일에서 투자자 데이터 로드
   const { tier1, tier2, tier3 } = loadInvestorData();
 

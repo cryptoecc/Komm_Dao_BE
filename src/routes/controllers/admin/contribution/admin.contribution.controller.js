@@ -76,6 +76,7 @@ exports.cerateContribution = async (req, res) => {
     );
 
     const cont_id = contribution.cont_id; // 새로 생성된 기여의 ID 가져오기
+    console.log(cont_id);
 
     // 2. 미션 정보를 CONTRIBUTION_MISSIONS에 저장
     if (parsedMissions.length > 0) {
