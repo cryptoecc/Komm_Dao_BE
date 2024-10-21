@@ -104,6 +104,7 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   const { walletAddress } = req.params;
   const { name, email, bio, expertise, membershipNft, stayUpdated } = req.body;
+  console.log(name);
 
   try {
     const user = await UserInfo.findOne({
@@ -115,8 +116,13 @@ const updateProfile = async (req, res) => {
     }
 
     let profileImageUrl = user.user_image_link;
+    console.log(path.basename(profileImageUrl));
+    console.log(req.file);
     if (req.file) {
-      if (profileImageUrl) {
+      if (
+        profileImageUrl &&
+        profileImageUrl !== "uploads/profile_default.png"
+      ) {
         const oldImagePath = path.join(
           __dirname,
           "../../../../assets/uploads",
@@ -326,6 +332,16 @@ const updateXPBalance = async (req, res) => {
       message: "XP balance and rating updated successfully.",
     });
   } catch (error) {
+    // SequelizeUniqueConstraintError와 같은 특정 에러 처리 추가 가능
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Duplicate entry error: User has already rated this project.",
+        });
+    }
+
     console.error("Error updating XP balance or rating:", error);
     res.status(500).json({ message: "Failed to update XP balance or rating." });
   }

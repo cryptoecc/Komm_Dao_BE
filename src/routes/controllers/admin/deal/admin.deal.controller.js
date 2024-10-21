@@ -221,7 +221,7 @@ exports.getDealInterest = async (req, res) => {
               model: UserInfo, // USER 테이블을 조인하여 user_name 가져오기
               required: false, // LEFT JOIN을 통해 user 정보가 없어도 가져옴
               as: "user",
-              attributes: ["user_name"], // 필요한 필드만 가져옴
+              attributes: ["user_name", "email_addr"], // 필요한 필드만 가져옴
             },
           ],
         },
@@ -250,6 +250,7 @@ exports.getDealInterest = async (req, res) => {
           payment_due_date: deal.payment_due_date || "--",
           user_id: "--", // 기본 값
           user_name: "--", // 기본 값
+          user_email: "--",
           user_interest: "--", // 기본 값,
           user_final_allocation: "--",
           user_payment_amount: "--",
@@ -268,6 +269,7 @@ exports.getDealInterest = async (req, res) => {
         payment_due_date: deal.payment_due_date,
         user_id: userInterest.user_id || "--", // user_id가 없을 경우 '=='로 설정
         user_name: userInterest.user ? userInterest.user.user_name : "--", // user_name이 없으면 '=='
+        user_email: userInterest.user ? userInterest.user.email_addr : "--",
         user_interest: userInterest.user_interest || "--", // user_interest가 없으면 '=='
         user_final_allocation: userInterest.user_final_alloc || "--",
         user_payment_amount: userInterest.payment_amount || "--",
@@ -435,7 +437,10 @@ exports.sendEmailNotifications = async (req, res) => {
         payment_due_date,
         channel, // modalChannel이 백엔드에선 channel로 들어옴
       });
-
+      const personalizedTitle = replaceTemplate(title, {
+        deal_name: deal_name, // 이 부분은 각 deal의 deal_name을 넣습니다.
+        user_name: user_name, // 필요 시 유저 이름도 추가 가능합니다.
+      });
       // await sendDealEmail(user_email, deals);
       console.log(`Sending email to: ${user_email}`);
       console.log("Personalized Message:", personalizedMessage);
@@ -448,7 +453,7 @@ exports.sendEmailNotifications = async (req, res) => {
         payment_due_date,
         google_form_link: channel || "링크가 제공되지 않았습니다.",
         message: personalizedMessage,
-        title,
+        title: personalizedTitle,
       });
     });
 

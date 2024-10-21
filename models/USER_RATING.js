@@ -1,17 +1,16 @@
 const Sequelize = require("sequelize");
+
 module.exports = function (sequelize, DataTypes) {
   const UserRating = sequelize.define(
     "USER_RATING",
     {
-      pjt_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-      },
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        primaryKey: true,
+      },
+      pjt_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
       },
       rating: {
         type: DataTypes.DOUBLE,
@@ -33,13 +32,13 @@ module.exports = function (sequelize, DataTypes) {
       timestamps: false,
       indexes: [
         {
-          name: "PRIMARY",
+          name: "idx_pjt_user_unique", // pjt_id와 user_id의 복합 유니크 제약
           unique: true,
           using: "BTREE",
           fields: [{ name: "pjt_id" }, { name: "user_id" }],
         },
         {
-          name: "idx_user_id",
+          name: "idx_user_id", // user_id에 대한 추가 인덱스
           using: "BTREE",
           fields: [{ name: "user_id" }],
         },
