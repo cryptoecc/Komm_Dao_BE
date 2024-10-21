@@ -493,7 +493,7 @@ const calculateFinalGrade = async (project, tier1, tier2, tier3) => {
 };
 
 // 모든 프로젝트의 점수를 업데이트하는 함수
-export const updateAllProjects = async () => {
+const updateAllProjects = async () => {
   // 엑셀 파일에서 투자자 데이터 로드
   const { tier1, tier2, tier3 } = loadInvestorData();
 
