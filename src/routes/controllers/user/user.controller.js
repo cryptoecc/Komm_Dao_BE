@@ -82,14 +82,14 @@ exports.verifyPin = async (req, res) => {
     if (!emailLog) {
       return res
         .status(400)
-        .send({ success: false, message: "Invalid PIN or email." });
+        .send({ success: false, message: "Invalid verification code." });
     }
 
     const currentTime = new Date();
     if (currentTime > emailLog.pin_expiry) {
       return res
         .status(400)
-        .send({ success: false, message: "PIN has expired." });
+        .send({ success: false, message: "Code has expired." });
     }
 
     // PIN 유효
@@ -163,3 +163,15 @@ exports.submit = async (req, res) => {
 //   // const { image } = req.body;
 //   // console.log(image)
 // };
+exports.verifyNickname = async (req, res) => {
+  const { displayName } = req.body;
+  console.log(displayName);
+
+  const user = await UserInfo.findOne({ where: { user_name: displayName } });
+
+  if (user) {
+    return res.json({ success: false, message: "Nickname is already taken" });
+  }
+
+  return res.json({ success: true });
+};

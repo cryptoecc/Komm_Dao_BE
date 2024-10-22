@@ -17,6 +17,8 @@ router.post(
   },
   userController.submit
 );
+router.post("/check-duplicate-nickname", userController.verifyNickname);
+
 router.use("/profile", profileRouter);
 router.use("/watchlist", watchlistRouter);
 

@@ -47,6 +47,7 @@ exports.memberList = async (req, res) => {
           attributes: ["komm_name"], // 가져올 속성
         },
       ],
+      order: [["reg_date", "DESC"]],
     });
     res.json(members);
   } catch (error) {
@@ -223,7 +224,10 @@ exports.updateStatus = async (req, res) => {
 
     await UserInfo.update({ appr_status: status }, { where: { user_id } });
     if (status == "APPLIED") {
-      await UserInfo.update({ activate_yn: "Y" }, { where: { user_id } });
+      await UserInfo.update(
+        { activate_yn: "Y", applied_date: new Date() },
+        { where: { user_id } }
+      );
       //   await UserInfo.update({ activate_yn: "Y" }, { where: { user_id } });
 
       // 4. USER_INVITE_CONTRIBUTION 테이블 상태 업데이트 함수 호출

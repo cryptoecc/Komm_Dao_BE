@@ -65,6 +65,10 @@ module.exports = (sequelize) => {
         allowNull: false,
         comment: "update vote power",
       },
+      applied_date: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
       activate_yn: {
         type: DataTypes.STRING(255),
         allowNull: true,
