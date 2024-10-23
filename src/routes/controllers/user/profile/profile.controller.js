@@ -5,6 +5,7 @@ const {
   DealInfo,
   UserRating,
   ProjectInfo,
+  ContributionInfo,
 } = require("../../../../../models");
 const { sequelize } = require("../../../../../models");
 const path = require("path");
@@ -334,12 +335,9 @@ const updateXPBalance = async (req, res) => {
   } catch (error) {
     // SequelizeUniqueConstraintError와 같은 특정 에러 처리 추가 가능
     if (error.name === "SequelizeUniqueConstraintError") {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Duplicate entry error: User has already rated this project.",
-        });
+      return res.status(400).json({
+        message: "Duplicate entry error: User has already rated this project.",
+      });
     }
 
     console.error("Error updating XP balance or rating:", error);
@@ -400,6 +398,7 @@ const updatePointHistory = async (req, res) => {
     );
 
     await t.commit();
+
     res.json({ message: "Point history updated successfully" });
   } catch (error) {
     await t.rollback();

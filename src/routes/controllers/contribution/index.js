@@ -9,5 +9,7 @@ router.post("/check-applied-email", contributionInfo.getAppliedInviteCount);
 router.post("/get-userXp", contributionInfo.getUserXpPoint);
 router.post("/update-claimXp", contributionInfo.updateXpPoint);
 router.post("/check-confirm", contributionInfo.checkUserConfirm);
+router.post("/daily-check", contributionInfo.handleDailyCheck);
+router.post("/daily-check-confirm", contributionInfo.dailyCheckConfirm);
 
 module.exports = router;

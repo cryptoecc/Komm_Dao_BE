@@ -58,53 +58,72 @@ exports.memberList = async (req, res) => {
 
 // 초대 상태를 업데이트하는 별도 함수
 const updateInviteContributionStatus = async (email, status) => {
-  // USER_INVITE_CONTRIBUTION에 해당 이메일이 있는지 확인 후 상태 업데이트
-  const [updatedRows] = await UserInviteContribution.update(
-    {
-      status: status, // 상태값 업데이트 (예: APPLIED, REJECTED)
-      status_date: new Date(), // 상태가 변경된 현재 날짜
-    },
-    { where: { invite_email: email } }
-  );
-
-  // 해당 이메일이 USER_INVITE_CONTRIBUTION에 없으면 로그 처리
-  if (updatedRows === 0) {
-    console.log(`No invites found for email: ${email}`);
-    return;
-  }
-
-  // status가 APPLIED로 업데이트되었을 경우 XP 포인트 처리
   if (status === "APPLIED") {
-    // 초대한 유저의 user_id와 APPLIED된 초대 횟수 가져오기
-    const appliedInvites = await UserInviteContribution.findAll({
+    // 1. 현재 PENDING 상태의 초대들만 조회
+    const pendingInvites = await UserInviteContribution.findAll({
       where: {
         invite_email: email,
-        status: "APPLIED",
+        status: "PENDING", // PENDING 상태인 초대만 조회
       },
-      attributes: ["user_id"], // 초대한 유저의 user_id 가져오기
+      attributes: ["user_id", "invite_id"], // 초대한 유저의 user_id와 invite_id 가져오기
       raw: true,
     });
 
-    for (const invite of appliedInvites) {
-      const inviterUserId = invite.user_id;
-
-      // APPLIED된 초대 횟수 가져오기
-      const appliedCount = await UserInviteContribution.count({
-        where: {
-          user_id: inviterUserId, // 해당 유저가 초대한 사람들 중에서
-          status: "APPLIED", // APPLIED된 상태의 초대
-        },
-      });
-
-      // APPLIED된 횟수만큼 XP 포인트 계산 (100 * APPLIED된 수)
-      const xpPoints = appliedCount * 100;
-
-      // 해당 유저의 UserContribution 테이블의 XP 업데이트
-      await UserContribution.update(
-        { cont_xp: xpPoints, claim_yn: "Y" },
-        { where: { user_id: inviterUserId } }
-      );
+    if (pendingInvites.length === 0) {
+      console.log(`No pending invites found for email: ${email}`);
+      return;
     }
+
+    // 2. PENDING 상태의 초대만 APPLIED로 업데이트하고, 동시에 XP를 계산
+    const updatedInvites = await Promise.all(
+      pendingInvites.map(async (invite) => {
+        // 각 초대를 APPLIED로 업데이트
+        await UserInviteContribution.update(
+          { status: "APPLIED", status_date: new Date() },
+          { where: { invite_id: invite.invite_id } } // 각 초대의 invite_id를 기준으로 업데이트
+        );
+
+        // APPLIED로 변경된 초대들만 카운트
+        const appliedCount = await UserInviteContribution.count({
+          where: {
+            user_id: invite.user_id, // 해당 유저가 초대한 사람들 중에서
+            status: "APPLIED", // 새로 APPLIED된 상태의 초대만 카운트
+            invite_id: invite.invite_id, // invite_id로 구체화하여 중복 방지
+          },
+        });
+
+        // APPLIED된 횟수만큼 XP 포인트 계산 (100 * APPLIED된 수)
+        const xpPoints = appliedCount * 100;
+
+        // 기존의 cont_xp 값 조회
+        const userContribution = await UserContribution.findOne({
+          where: { user_id: invite.user_id, cont_type: "Invite" },
+          attributes: ["cont_xp"],
+        });
+
+        const currentXp = userContribution ? userContribution.cont_xp : 0; // 기존 XP가 없으면 0으로 간주
+
+        // 기존 XP에 새로운 XP를 더한 값 계산
+        const newXp = currentXp + xpPoints;
+
+        // 해당 유저의 UserContribution 테이블의 XP 업데이트
+        await UserContribution.update(
+          { cont_xp: newXp, claim_yn: "Y" },
+          { where: { user_id: invite.user_id, cont_type: "Invite" } }
+        );
+
+        // 업데이트된 레코드를 리턴 (원하는 데이터를 바로 사용할 수 있도록)
+        return {
+          invite_id: invite.invite_id,
+          user_id: invite.user_id,
+          newXp,
+        };
+      })
+    );
+
+    // 3. 업데이트된 초대 목록을 바로 사용할 수 있음
+    console.log("Updated Invites:", updatedInvites);
+    return updatedInvites;
   }
 };
 
@@ -231,16 +250,15 @@ exports.updateStatus = async (req, res) => {
       //   await UserInfo.update({ activate_yn: "Y" }, { where: { user_id } });
 
       // 4. USER_INVITE_CONTRIBUTION 테이블 상태 업데이트 함수 호출
-      await updateInviteContributionStatus(email, "APPLIED");
+      await updateInviteContributionStatus(email, "APPLIED", user_id);
       // 5. 상태가 APPLIED일 경우 이메일 전송
       await sendAppliedEmail(email, user.user_name, user.wallet_addr);
     } else if (status === "DENIED") {
       await UserInfo.update({ activate_yn: "N" }, { where: { user_id } });
-      await updateInviteContributionStatus(email, status);
+      await updateInviteContributionStatus(email, status, user_id);
       await sendDeniedEmail(email, user.user_name);
     } else {
       await UserInfo.update({ activate_yn: "N" }, { where: { user_id } });
-      await updateInviteContributionStatus(email, status);
     }
 
     res.status(200).json({ message: "Status updated successfully" });

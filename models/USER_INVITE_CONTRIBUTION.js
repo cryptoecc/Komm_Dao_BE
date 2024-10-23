@@ -48,6 +48,14 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
         comment: "초대 메일을 보낸 이메일",
       },
+      invited_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: "USER_INFO",
+          key: "user_id",
+        },
+      },
       status: {
         type: DataTypes.STRING(255),
         allowNull: false,
@@ -88,6 +96,13 @@ module.exports = function (sequelize, DataTypes) {
           fields: [{ name: "user_id" }],
         },
       ],
+      hooks: {
+        beforeUpdate: async (instance, options) => {
+          if (instance._previousDataValues.status === "APPLIED") {
+            throw new Error("Cannot change status once it is APPLIED");
+          }
+        },
+      },
     }
   );
 

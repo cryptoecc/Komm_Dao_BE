@@ -48,6 +48,11 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.DOUBLE,
         allowNull: true,
       },
+      participant_yn: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        defaultValue: "N",
+      },
     },
     {
       sequelize,
