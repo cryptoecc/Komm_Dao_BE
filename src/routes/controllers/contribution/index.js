@@ -11,5 +11,7 @@ router.post("/update-claimXp", contributionInfo.updateXpPoint);
 router.post("/check-confirm", contributionInfo.checkUserConfirm);
 router.post("/daily-check", contributionInfo.handleDailyCheck);
 router.post("/daily-check-confirm", contributionInfo.dailyCheckConfirm);
+router.post("/rate-check", contributionInfo.handleRateCheck);
+router.post("/rate-check-confirm", contributionInfo.rateCheckConfirm);
 
 module.exports = router;

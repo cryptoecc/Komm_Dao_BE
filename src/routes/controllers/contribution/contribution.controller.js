@@ -238,7 +238,10 @@ exports.updateXpPoint = async (req, res) => {
     }
 
     // cont_type이 "Daily-check"가 아닌 경우에만 max_participant와 cur_participant 비교
-    if (contributionInfo.cont_type !== "Daily-check") {
+    if (
+      contributionInfo.cont_type !== "Daily-check" &&
+      contributionInfo.cont_type !== "Rate-project"
+    ) {
       if (
         contributionInfo.cur_participant >= contributionInfo.max_participant
       ) {
@@ -420,6 +423,101 @@ exports.dailyCheckConfirm = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user contribution:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.rateCheckConfirm = async (req, res) => {
+  const { cont_id, user_id, cont_type } = req.body;
+
+  try {
+    // 1. UserContribution에서 해당 유저, 컨트리뷰션 ID, 타입으로 레코드 조회
+    const userContribution = await UserContribution.findOne({
+      where: { cont_id, user_id, cont_type },
+      attributes: ["claim_yn", "participant_yn"], // 필요한 필드만 조회
+    });
+
+    // 2. 데이터가 없는 경우
+    if (!userContribution) {
+      return res
+        .status(404)
+        .json({ message: "No user contribution found for this mission." });
+    }
+
+    // 3. 데이터가 있는 경우 claim_yn 값 반환
+    res.status(200).json({
+      claim_yn: userContribution.claim_yn,
+      participant_yn: userContribution.participant_yn,
+    });
+  } catch (error) {
+    console.error("Error fetching user contribution:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.handleRateCheck = async (req, res) => {
+  const { cont_id, user_id, cont_type, rate_project } = req.body;
+  console.log(cont_type);
+  try {
+    // 1. cont_id로 ContributionMissions에서 ms_id 가져오기
+    const mission = await ContributionMissions.findOne({
+      where: { cont_id },
+      attributes: ["ms_id"],
+    });
+
+    if (!mission) {
+      return res
+        .status(404)
+        .json({ message: "No mission found for the given cont_id" });
+    }
+
+    const ms_id = mission.ms_id;
+
+    // 2. UserContribution에서 user_id, cont_id, ms_id로 레코드 찾기
+    const existingContribution = await UserContribution.findOne({
+      where: { user_id, cont_id, ms_id },
+    });
+
+    // 3. 레코드가 없으면 새로 생성하고 응답 반환
+    if (!existingContribution) {
+      await UserContribution.create({
+        cont_id,
+        user_id,
+        ms_id,
+        cont_type,
+        claim_yn: "N", // 기본값 설정
+        cont_xp: 0, // 기본 XP 값 설정
+        total_xp: 0,
+        participant_yn: "N", // 기본값 설정
+      });
+
+      return res
+        .status(201)
+        .json({ message: "UserContribution created successfully" });
+    }
+
+    // 4. participant_yn이 "Y"가 아닌 경우만 업데이트 진행
+    if (existingContribution.participant_yn !== "Y") {
+      if (rate_project >= 10) {
+        await existingContribution.update({
+          cont_xp: 100, // XP 100으로 증가
+          claim_yn: "Y", // claim_yn을 "Y"로 변경
+          cont_type: cont_type,
+        });
+
+        return res.status(200).json({
+          message: "UserContribution updated successfully",
+          claim_yn: "Y",
+        });
+      }
+    }
+
+    // rate_project가 10 미만일 경우 업데이트하지 않음
+    return res.status(200).json({
+      message: "UserContribution exists but rate_project is less than 10",
+    });
+  } catch (error) {
+    console.error("Error handling rate check:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
