@@ -521,6 +521,45 @@ exports.handleRateCheck = async (req, res) => {
   }
 };
 
+exports.getParticipant = async (req, res) => {
+  const { cont_id, cont_type } = req.body;
+  console.log(cont_id, cont_type);
+
+  try {
+    const participant = await UserContribution.findAll({
+      where: {
+        cont_id: cont_id,
+        cont_type: cont_type,
+        participant_yn: "Y",
+      },
+      attributes: ["user_id"],
+    });
+
+    console.log(participant);
+
+    // participant가 없을 경우 빈 배열 반환
+    if (!participant || participant.length === 0) {
+      return res.status(200).json({ participant: [] });
+    }
+
+    // 3. user_id 배열 생성
+    const userIds = participant.map((participant) => participant.user_id);
+    // 4. UserInfo에서 user_id에 해당하는 user_image_link 가져오기
+    const userInfo = await UserInfo.findAll({
+      where: {
+        user_id: userIds, // 여러 user_id에 대해 조회
+      },
+      attributes: ["user_name", "user_image_link"], // 필요한 필드만 가져오기
+    });
+
+    // 5. 최종 데이터 프론트로 반환
+    return res.status(200).json({ participants: userInfo });
+  } catch (error) {
+    console.error("Error fetching get data", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 // 매일 아침 10시에 participant_yn 값을 "Y"에서 "N"으로 변경하는 작업 설정
 cron.schedule("0 10 * * *", async () => {
   try {

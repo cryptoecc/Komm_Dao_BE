@@ -13,5 +13,6 @@ router.post("/daily-check", contributionInfo.handleDailyCheck);
 router.post("/daily-check-confirm", contributionInfo.dailyCheckConfirm);
 router.post("/rate-check", contributionInfo.handleRateCheck);
 router.post("/rate-check-confirm", contributionInfo.rateCheckConfirm);
+router.post("/get-participant", contributionInfo.getParticipant);
 
 module.exports = router;
